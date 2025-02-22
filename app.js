@@ -1,5 +1,4 @@
-import * as pdfjsLib from './node_modules/pdfjs-dist/build/pdf.min.mjs';
-import './node_modules/pdfjs-dist/build/pdf.worker.min.mjs'
+import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/+esm';
 
 document.addEventListener('DOMContentLoaded', function() {
     const pdfInput = document.getElementById('pdfInput');

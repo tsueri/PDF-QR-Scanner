@@ -16,7 +16,6 @@
   "license": "MIT",
   "dependencies": {
     "bootstrap": "^5.3.3",
-    "jsqr": "^1.4.0",
-    "pdfjs-dist": "^4.10.38"
+    "jsqr": "^1.4.0"
   }
 }
