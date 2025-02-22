@@ -1,14 +1,14 @@
-# pdf-qr-scanner
+# PDF QR Scanner
 
-Welcome to **pdf-qr-scanner**, an open-source project designed to scan PDF files for QR codes and present any found as a CSV file. This lightweight application is built using HTML, CSS, and JavaScript, ensuring it can run seamlessly without any additional dependencies.
+Welcome to **PDF QR Scanner**, an open-source project designed to scan PDF files for QR codes and present any found as a CSV file. This lightweight application is built using HTML, CSS, and JavaScript, ensuring it can run seamlessly without any additional dependencies.
 
 ## Overview
 
-The main purpose of this project is to provide users with a straightforward tool to extract QR code information from PDF documents with multiple pages. Whether you're managing inventory, tracking items, or simply organizing digital content, pdf-qr-scanner offers an easy solution.
+The main purpose of this project is to provide users with a straightforward tool to extract QR code information from PDF documents with multiple pages. Whether you're managing inventory, tracking items, or simply organizing digital content, PDF QR Scanner offers an easy solution.
 
 ## Installation
 
-Getting started with pdf-qr-scanner is incredibly simple:
+Getting started with PDF QR Scanner is incredibly simple:
 
 1. **Clone the Repository**: Use Git to clone the repository into your desired webroot directory where the application should run.
    ```bash
@@ -47,4 +47,4 @@ This project is licensed under the MIT License. See the [LICENSE](https://github
 
 For any questions or support, please create an issue in the [GitHub repository](https://github.com/tsueri/pdf-qr-scanner/issues).
 
-Thank you for using pdf-qr-scanner! Your feedback and contributions are greatly appreciated. 🚀
+Thank you for using PDF QR Scanner! Your feedback and contributions are greatly appreciated. 🚀
