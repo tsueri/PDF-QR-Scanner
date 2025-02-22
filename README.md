@@ -1,6 +1,6 @@
 # PDF QR Scanner
 
-Welcome to **PDF QR Scanner**, an open-source project designed to scan PDF files for QR codes and present any found as a CSV file. This lightweight application is built using HTML, CSS, and JavaScript, ensuring it can run seamlessly without any additional dependencies.
+Welcome to **PDF QR Scanner**, an open-source project designed to scan PDF files for QR codes and present any found as a CSV file. This lightweight application is built using HTML, CSS, and JavaScript, ensuring it can run seamlessly without any additional dependencies. Try it [here](https://qrscan.campa.tools/).
 
 ## Overview
 
