@@ -1,0 +1,22 @@
+{
+  "name": "pdf-qr-scanner",
+  "version": "1.0.0",
+  "description": "Scan QR Codes in PDF and get it back as CSV.",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "pdf",
+    "qr",
+    "code",
+    "scan"
+  ],
+  "author": "Jonas Zürcher",
+  "license": "MIT",
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "jsqr": "^1.4.0",
+    "pdfjs-dist": "^4.10.38"
+  }
+}

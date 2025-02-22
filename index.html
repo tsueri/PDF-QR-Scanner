@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF QR Code Scanner</title>
+    <link
+        href="data:image/x-icon;base64,AAABAAEAEBAAAAAAAABoBQAAFgAAACgAAAAQAAAAIAAAAAEACAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAADAxeYA3+DcAH55ewDg4uIA2+L9AKeorADl5+gAzNDjAJaXlQCsrKYAdlrbAC8x+wD6/v8AMTH7AJiYmACChocA/P7/AISDhwDp6+sAAQD6AP/+/wAAAf0AgH+xAO7w8QCfoJ4Aop2eAJ+i/QDV2/IApZ6hAPL09ADd5ewA9/b6AJOTkwDk5uYAUkbgAKiqqgCEgH8A6OTpAPn/+gCDhIIA+/39AOrn6QD9/f0A1NfVAP//+gDX1tIA//39AOnr7ADn6vIA1tjYANjY2ACLiYgAjI2LAN7c2wDz8PIA9fDyAJCPkQDh4eEA9vf1AMvQ0wBGQfYA9vj4ANDOzQCqrasA6OnnANXT0wD+//sAhoSDAP/9/gCYmZ0AytfxAAED/ACdnpoAiYmJAHt5xQCen50AnqCgANzc3ADv8vAAoqCgAPH18ADz8/MABQG4AN/h4gDy9/YA4uDfAFc/zQDQzNEAlJCVAKepqQDl5eUAMADYAP34+QD6/PwAnIn9AMjR8gD8+v8AmJmVAPz9/wDr6egA/v3/AP/9/wD///wAAAD9AAIA/QA2M/sAYkvWAKirygDZ2NoA2tzdAIuMigAwM70AAAC2AAMAtgD08vEA9fb0APX39wDz+vcAkJKTAF8y5gD8//0A6+npAP7//QDr6uwAAAD+AAAC+wDR4NgAAgD+AHdm3wCIiIgAAAK0AKGdogAEALcA9PLyAAcAtwDCyugAz83NAJOSlADk5OQAlJOXAJeVlADo5ecA+/v7APr//gCurKsAeFzdAP3//gA1MvoA///+AAIB+QB2V/IA6+3tAAMC/ADt7e0A2NriAAIAuAD09fMA4+DiAJGPlQD69/kA+fj8AP76+QD6//8A+///AK6srAD9//8ANwnSAP///wA4IMYA3NvdAO/x8QAoC74Ap6enAOfk5gD6+voA5ujpAC40+QBXVs4A6OvpANXV1QD//v0A7ejpAIiDhQACAfsAAQL+AImKiADt7vIAiYuLAJ+gnADU4OQAxNDQAMrI3ACopqUAqaqoAKurqwAuMv0A09XWAPz+/gD+/v4AAAD5AP/+/gCMh4kAn52dAAABtQB4eHgAdW3vAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZZTIWIk0uUkzucmBDyQCzCylxcp7KSmvBoqKOQFtMm6lpXpIErJjJVqtA51VTWy7pS6nwB6rqL61eUCNUzs1IKeUo6w6G2pKX5khfocWqTinp8VZoB+9sW9rClZbppqMxrTIwV0uVBo8RndeAAcvDqfGkiN6tMgEIoAwdFCcuginxacJo2W0dZGWKI5cPR1FlKUqBbR6ZGDNvyZEKJ8XGWaGgsuEm3Fwy3KLQye2EWFiaLjHlbd9R1I3wqKul4grlBOYFX98fGdxUT+hc1ctNqVpDQsLw5OwFSikOj5BTqWUDJSexo94yEIQkMSzqqcUxXpkvBhLTINPdhwxhaWUpwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+        rel="icon" type="image/x-icon">
+    <script type="module" src="node_modules/jsqr/dist/jsQR.js"></script>
+    <script type="module" src="app.js"></script>
+    <link rel="stylesheet" href="scss/custom.css">
+    <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body>
+    <div class="px-4 py-5 my-5 text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-filetype-pdf"
+            viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+                d="M14 4.5V14a2 2 0 0 1-2 2h-1v-1h1a1 1 0 0 0 1-1V4.5h-2A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v9H2V2a2 2 0 0 1 2-2h5.5zM1.6 11.85H0v3.999h.791v-1.342h.803q.43 0 .732-.173.305-.175.463-.474a1.4 1.4 0 0 0 .161-.677q0-.375-.158-.677a1.2 1.2 0 0 0-.46-.477q-.3-.18-.732-.179m.545 1.333a.8.8 0 0 1-.085.38.57.57 0 0 1-.238.241.8.8 0 0 1-.375.082H.788V12.48h.66q.327 0 .512.181.185.183.185.522m1.217-1.333v3.999h1.46q.602 0 .998-.237a1.45 1.45 0 0 0 .595-.689q.196-.45.196-1.084 0-.63-.196-1.075a1.43 1.43 0 0 0-.589-.68q-.396-.234-1.005-.234zm.791.645h.563q.371 0 .609.152a.9.9 0 0 1 .354.454q.118.302.118.753a2.3 2.3 0 0 1-.068.592 1.1 1.1 0 0 1-.196.422.8.8 0 0 1-.334.252 1.3 1.3 0 0 1-.483.082h-.563zm3.743 1.763v1.591h-.79V11.85h2.548v.653H7.896v1.117h1.606v.638z" />
+        </svg>
+        <h1 class="display-5 fw-bold text-body-emphasis">Scan QR Codes in PDF Files</h1>
+        <div class="col-lg-6 mx-auto">
+            <p class="lead mb-4">Upload your PDF to scan for QR-Codes. Get it back as CSV!</p>
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <div class="mb-3">
+                    <input class="form-control" type="file" id="pdfInput">
+                </div>
+                <div class="mb-3">
+                    <button id="scanButton" class="btn btn-outline-primary px-4" disabled>Scan for QR-Codes</button>
+                </div>
+            </div>
+            <div>
+                <progress class="" id="progressBar" role="progressbar" value="0" max="100" style="width: 100%;"></progress>
+            </div>
+            <div style="display:none;" id="canvasContainer"></div>
+        </div>
+    </div>
+</body>
+</html>
