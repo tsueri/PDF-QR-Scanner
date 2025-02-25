@@ -13,7 +13,7 @@ Getting started with PDF QR Scanner is incredibly simple:
 1. **Clone the Repository**: Use Git to clone the repository into your desired webroot directory where the application should run.
    ```bash
    git clone https://github.com/tsueri/pdf-qr-scanner.git /path/to/webroot
-   npn install
+   npm install
    ```
 
 2. **Access the Application**: Open your web browser and navigate to the location of the cloned project in your server's root directory.
