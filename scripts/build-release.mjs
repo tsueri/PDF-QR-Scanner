@@ -37,7 +37,6 @@ const staticFiles = [
   'zip.js',
   'scan.worker.js',
   'scss/custom.css',
-  '.htaccess',
   'LICENSE',
   'llms.txt',
 ];
