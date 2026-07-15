@@ -4,7 +4,7 @@
   "description": "Scan QR Codes in PDF and get it back as CSV.",
   "main": "index.html",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node test-regression.js",
     "build:css": "sass --no-source-map --silence-deprecation=import --silence-deprecation=global-builtin --silence-deprecation=color-functions --silence-deprecation=if-function scss/custom.scss scss/custom.css"
   },
   "keywords": [
@@ -19,5 +19,11 @@
     "bootstrap": "^5.3.8",
     "jsqr": "^1.4.0",
     "pdfjs-dist": "^4.10.38"
+  },
+  "devDependencies": {
+    "canvas": "^3.2.3",
+    "pdfkit": "^0.19.1",
+    "puppeteer": "^25.3.0",
+    "qrcode": "^1.5.4"
   }
 }

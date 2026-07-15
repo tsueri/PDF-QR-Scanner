@@ -39,27 +39,35 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!pdfDoc) return;
 
         const total = pdfDoc.numPages;
+        console.log('[QR-Scanner] Scan starting — pages:', total, '— scan.js v2 (rotation sweep)');
         scanningZone.hidden = false;
         progressBar.setAttribute('aria-valuemax', total);
         document.getElementById('progressTotal').textContent = total;
         document.getElementById('progressCurrent').textContent = '0';
 
-        const results = await scanPDF(pdfDoc, {
-            onProgress: (page, total) => {
-                const pct = (page / total) * 100;
-                progressFill.style.width = pct + '%';
-                progressBar.setAttribute('aria-valuenow', page);
-                const currentEl = document.getElementById('progressCurrent');
-                if (currentEl) currentEl.textContent = page;
+        try {
+            const results = await scanPDF(pdfDoc, {
+                onProgress: (page, total) => {
+                    const pct = (page / total) * 100;
+                    progressFill.style.width = pct + '%';
+                    progressBar.setAttribute('aria-valuenow', page);
+                    const currentEl = document.getElementById('progressCurrent');
+                    if (currentEl) currentEl.textContent = page;
+                }
+            });
+
+            progressBar.classList.add('scan-progress--complete');
+
+            if (results.length > 0) {
+                console.log('[QR-Scanner] Found', results.length, 'QR code(s):', results.map(r => r.data));
+                setTimeout(() => downloadCSV(results), 150);
+            } else {
+                console.log('[QR-Scanner] No QR codes found on any page');
+                alert('No QR codes found.');
             }
-        });
-
-        progressBar.classList.add('scan-progress--complete');
-
-        if (results.length > 0) {
-            setTimeout(() => downloadCSV(results), 150);
-        } else {
-            alert('No QR codes found.');
+        } catch (err) {
+            console.error('[QR-Scanner] Scan error:', err);
+            alert('Scan error: ' + err.message);
         }
     });
 
@@ -79,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (document.modelContext) {
-        document.modelContext.registerTool({
+        const toolReg = document.modelContext.registerTool({
             name: "scan-loaded-pdf",
             description: "Scan the currently loaded PDF file for QR codes and return the found codes with their page numbers.",
             inputSchema: {
@@ -106,6 +114,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     }]
                 };
             }
-        }).catch(err => console.warn('WebMCP tool registration failed:', err));
+        });
+        if (toolReg && typeof toolReg.catch === 'function') {
+            toolReg.catch(err => console.warn('WebMCP tool registration failed:', err));
+        }
     }
 });
