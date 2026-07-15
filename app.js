@@ -1,5 +1,6 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import { scanPDF } from './scan.js';
+import { fileResultsToCSV } from './csv.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     const pdfInput = document.getElementById('pdfInput');
@@ -273,16 +274,8 @@ document.addEventListener('DOMContentLoaded', function() {
         setBusy(false);
     });
 
-    function formatCSV(results) {
-        var header = 'page,qr-code\n';
-        var rows = results.map(function(r) {
-            return '"' + String(r.page) + '","' + String(r.data) + '"';
-        }).join('\n');
-        return header + rows;
-    }
-
     function downloadCSV(results, pdfName) {
-        var csv = formatCSV(results);
+        var csv = fileResultsToCSV(pdfName, results);
         var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         var url = URL.createObjectURL(blob);
         var link = document.createElement('a');
@@ -324,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         content: [{ type: "text", text: "No QR codes found in any PDF." }]
                     };
                 }
-                var csv = formatCSV(allResults);
+                var csv = fileResultsToCSV(null, allResults);
                 return {
                     content: [{ type: "text", text: csv }]
                 };
