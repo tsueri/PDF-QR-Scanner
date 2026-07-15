@@ -1,21 +1,117 @@
 // Custom.scss
 // Option A: Include all of Bootstrap
 
-// Include any default variable overrides here (though functions won't be available)
-
 @import "../node_modules/bootstrap/scss/bootstrap";
+
+// Layout
+.scan-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 1.5rem;
+    padding-bottom: 3rem;
+}
+
+.scan-card {
+    width: 100%;
+    max-width: 560px;
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.04);
+    padding: 2rem;
+
+    &__hero {
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    &__icon {
+        color: #64748B;
+        margin-bottom: 0.75rem;
+    }
+
+    &__title {
+        margin-bottom: 0.5rem;
+    }
+
+    &__lead {
+        font-size: 1.0625rem;
+        color: #475569;
+        margin-bottom: 0;
+    }
+
+    &__button {
+        min-width: 180px;
+    }
+}
 
 // Upload controls
 .upload-controls {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
 
-    .form-control {
-        max-width: 260px;
+// Drop zone
+.drop-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 1.75rem 1.25rem;
+    border: 1.5px dashed #CBD5E1;
+    border-radius: 12px;
+    background: #F8FAFC;
+    color: #475569;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+    text-align: center;
+    margin: 0;
+
+    &:hover,
+    &.is-dragover {
+        border-color: #2563EB;
+        background: #EFF6FF;
+        color: #1D4ED8;
+    }
+
+    &:focus-within {
+        border-color: #2563EB;
+        background: #EFF6FF;
+        outline: 2px solid rgba(37, 99, 235, 0.25);
+        outline-offset: 2px;
+    }
+
+    &__hint {
+        font-size: 0.9375rem;
+    }
+
+    &__browse {
+        text-decoration: underline;
+        font-weight: 500;
+    }
+
+    &__filename {
+        font-size: 0.8125rem;
+        color: #1A1D27;
+        font-weight: 500;
+        word-break: break-all;
+    }
+
+    &__input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
     }
 }
 
@@ -42,6 +138,37 @@
     }
 }
 
+// Inline status messages
+.scan-status {
+    margin: 0.75rem 0 0 0;
+    padding: 0.625rem 0.875rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    text-align: center;
+
+    &[hidden] {
+        display: none;
+    }
+
+    &--success {
+        background: #F0FDF4;
+        color: #166534;
+        border: 1px solid #BBF7D0;
+    }
+
+    &--error {
+        background: #FEF2F2;
+        color: #991B1B;
+        border: 1px solid #FECACA;
+    }
+
+    &--neutral {
+        background: #F1F5F9;
+        color: #475569;
+        border: 1px solid #E2E8F0;
+    }
+}
+
 .scan-progress {
     &__label {
         font-size: 0.8125rem;
@@ -58,33 +185,22 @@
 
     &__track {
         width: 100%;
-        height: 14px;
+        height: 12px;
         background: #E2E8F0;
-        border-radius: 7px;
+        border-radius: 6px;
         overflow: hidden;
         position: relative;
+        container-type: inline-size;
     }
 
     &__fill {
         height: 100%;
         width: 0%;
         background-color: #2563EB;
-        border-radius: 7px;
+        border-radius: 6px;
         position: relative;
+        overflow: hidden;
         transition: width 0.25s ease-out;
-        background-image: linear-gradient(
-            90deg,
-            transparent 0%,
-            transparent 32%,
-            rgba(255, 255, 255, 0.15) 47%,
-            rgba(255, 255, 255, 0.18) 50%,
-            rgba(255, 255, 255, 0.15) 53%,
-            transparent 68%,
-            transparent 100%
-        );
-        background-size: 200% 100%;
-        background-repeat: no-repeat;
-        animation: scan-shimmer 2.6s ease-in-out infinite;
 
         &::before {
             content: '';
@@ -94,58 +210,66 @@
                 0deg,
                 transparent,
                 transparent 4px,
-                rgba(255, 255, 255, 0.08) 4px,
-                rgba(255, 255, 255, 0.08) 5px
+                rgba(255, 255, 255, 0.06) 4px,
+                rgba(255, 255, 255, 0.06) 5px
             );
             border-radius: inherit;
+        }
+
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 100cqw;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                transparent 42%,
+                rgba(255, 255, 255, 0.2) 47%,
+                rgba(255, 255, 255, 0.6) 50%,
+                rgba(255, 255, 255, 0.2) 53%,
+                transparent 58%,
+                transparent 100%
+            );
+            transform: translateX(-100%);
+            animation: scan-shimmer 2.2s linear infinite;
+            pointer-events: none;
+            will-change: transform;
         }
     }
 
     &__beam {
-        position: absolute;
-        right: 0;
-        top: -3px;
-        bottom: -3px;
-        width: 3px;
-        background: #93C5FD;
-        box-shadow:
-            0 0 14px 4px rgba(147, 197, 253, 0.5),
-            0 0 5px 1px rgba(147, 197, 253, 0.75);
-        border-radius: 1px;
-        animation: scan-beam-pulse 1.4s ease-in-out infinite;
+        display: none;
     }
 
     &--complete {
-        .scan-progress__beam {
-            display: none;
-        }
-
         .scan-progress__fill {
             background-color: #16A34A;
-            background-image: none;
-            animation: none;
+
+            &::after {
+                display: none;
+            }
         }
+    }
+}
+
+// Footer
+.scan-footer {
+    text-align: center;
+    padding: 1rem 1rem 2rem;
+
+    &__text {
+        margin: 0;
+        font-size: 0.8125rem;
+        color: #94A3B8;
     }
 }
 
 @keyframes scan-shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-
-@keyframes scan-beam-pulse {
-    0%, 100% {
-        opacity: 1;
-        box-shadow:
-            0 0 14px 4px rgba(147, 197, 253, 0.5),
-            0 0 5px 1px rgba(147, 197, 253, 0.75);
-    }
-    50% {
-        opacity: 0.3;
-        box-shadow:
-            0 0 8px 2px rgba(147, 197, 253, 0.25),
-            0 0 3px 0.5px rgba(147, 197, 253, 0.4);
-    }
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
 }
 
 @keyframes scan-zone-enter {
@@ -164,16 +288,11 @@
         animation: none;
     }
 
-    .scan-progress__beam {
-        animation: none;
-    }
-
     .scan-progress__fill {
-        animation: none;
         transition: none;
-        background-image: none;
 
-        &::before {
+        &::before,
+        &::after {
             display: none;
         }
     }

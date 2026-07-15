@@ -300,5 +300,6 @@ export async function scanPDF(pdfDoc, options = {}) {
     }
   }
 
+  results.sort((a, b) => a.page - b.page);
   return results;
 }

@@ -8,11 +8,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const scanningZone = document.getElementById('scanningZone');
     const progressBar = document.getElementById('progressBar');
     const progressFill = document.getElementById('progressFill');
+    const dropZone = document.getElementById('dropZone');
+    const dropZoneFilename = document.getElementById('dropZoneFilename');
+    const scanStatus = document.getElementById('scanStatus');
+    const scanButtonLabel = scanButton ? scanButton.textContent : 'Scan for QR codes';
     let pdfDoc = null;
     let pdfFileName = null;
 
     if (scanForm) {
         scanForm.addEventListener('submit', (e) => e.preventDefault());
+    }
+
+    function setStatus(message, variant) {
+        if (!scanStatus) return;
+        scanStatus.textContent = message;
+        scanStatus.classList.remove('scan-status--success', 'scan-status--error', 'scan-status--neutral');
+        if (variant) scanStatus.classList.add('scan-status--' + variant);
+        scanStatus.hidden = false;
+    }
+
+    function clearStatus() {
+        if (!scanStatus) return;
+        scanStatus.hidden = true;
+        scanStatus.textContent = '';
+        scanStatus.classList.remove('scan-status--success', 'scan-status--error', 'scan-status--neutral');
     }
 
     function resetProgress() {
@@ -21,21 +40,72 @@ document.addEventListener('DOMContentLoaded', function() {
         progressBar.setAttribute('aria-valuenow', '0');
         progressBar.setAttribute('aria-valuemax', '0');
         progressBar.classList.remove('scan-progress--complete');
+        clearStatus();
     }
 
-    async function onFileSelected(event) {
-        const file = event.target.files[0];
+    function setBusy(busy) {
+        if (!scanButton) return;
+        scanButton.disabled = busy;
+        scanButton.textContent = busy ? 'Scanning…' : scanButtonLabel;
+    }
+
+    async function loadFile(file) {
+        if (!file) return;
         if (file.type !== 'application/pdf') {
-            alert('Please upload a PDF file.');
+            setStatus('Please choose a PDF file.', 'error');
+            scanButton.disabled = true;
             return;
         }
+        clearStatus();
         scanButton.disabled = false;
         resetProgress();
         pdfFileName = file.name;
-        pdfDoc = await pdfjsLib.getDocument(URL.createObjectURL(file)).promise;
+        if (dropZoneFilename) {
+            dropZoneFilename.textContent = file.name;
+            dropZoneFilename.hidden = false;
+        }
+        try {
+            pdfDoc = await pdfjsLib.getDocument(URL.createObjectURL(file)).promise;
+        } catch (err) {
+            console.error('[QR-Scanner] PDF load error:', err);
+            pdfDoc = null;
+            scanButton.disabled = true;
+            setStatus('Could not open this PDF. It may be damaged.', 'error');
+        }
     }
 
-    pdfInput.addEventListener('change', onFileSelected);
+    pdfInput.addEventListener('change', (event) => loadFile(event.target.files[0]));
+
+    if (dropZone) {
+        ['dragenter', 'dragover'].forEach((evt) => {
+            dropZone.addEventListener(evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.add('is-dragover');
+            });
+        });
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!dropZone.contains(e.relatedTarget)) {
+                dropZone.classList.remove('is-dragover');
+            }
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('is-dragover');
+            const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+            if (file) {
+                try {
+                    pdfInput.files = e.dataTransfer.files;
+                } catch {
+                    // Some browsers reject assigning .files; loadFile handles it directly.
+                }
+                loadFile(file);
+            }
+        });
+    }
 
     scanButton.addEventListener('click', async () => {
         if (!pdfDoc) return;
@@ -43,9 +113,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const total = pdfDoc.numPages;
         console.log('[QR-Scanner] Scan starting — pages:', total, '— scan.js v2 (rotation sweep)');
         scanningZone.hidden = false;
+        clearStatus();
         progressBar.setAttribute('aria-valuemax', total);
         document.getElementById('progressTotal').textContent = total;
         document.getElementById('progressCurrent').textContent = '0';
+        setBusy(true);
 
         try {
             const results = await scanPDF(pdfDoc, {
@@ -62,14 +134,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (results.length > 0) {
                 console.log('[QR-Scanner] Found', results.length, 'QR code(s):', results.map(r => r.data));
+                const noun = results.length === 1 ? 'code' : 'codes';
+                setStatus(`Done — ${results.length} QR ${noun} found. Downloading CSV.`, 'success');
                 setTimeout(() => downloadCSV(results), 150);
             } else {
                 console.log('[QR-Scanner] No QR codes found on any page');
-                alert('No QR codes found.');
+                setStatus('No QR codes found in this PDF.', 'neutral');
             }
         } catch (err) {
             console.error('[QR-Scanner] Scan error:', err);
-            alert('Scan error: ' + err.message);
+            setStatus('Scan failed: ' + err.message, 'error');
+        } finally {
+            setBusy(false);
         }
     });
 

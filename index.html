@@ -26,7 +26,7 @@
 
     <div class="container">
         <header class="d-flex flex-wrap justify-content-left py-3 mb-4">
-          <a href="https://github.com/tsueri/PDF-QR-Scanner" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none" aria-label="Link to gitub repo">
+          <a href="https://github.com/tsueri/PDF-QR-Scanner" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none" aria-label="Link to GitHub repo">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
                 <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"/>
               </svg>
@@ -34,26 +34,31 @@
         </header>
       </div>
 
-    <div class="px-4 py-5 my-5 text-center">
-        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-filetype-pdf"
-            viewBox="0 0 16 16">
-            <path fill-rule="evenodd"
-                d="M14 4.5V14a2 2 0 0 1-2 2h-1v-1h1a1 1 0 0 0 1-1V4.5h-2A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v9H2V2a2 2 0 0 1 2-2h5.5zM1.6 11.85H0v3.999h.791v-1.342h.803q.43 0 .732-.173.305-.175.463-.474a1.4 1.4 0 0 0 .161-.677q0-.375-.158-.677a1.2 1.2 0 0 0-.46-.477q-.3-.18-.732-.179m.545 1.333a.8.8 0 0 1-.085.38.57.57 0 0 1-.238.241.8.8 0 0 1-.375.082H.788V12.48h.66q.327 0 .512.181.185.183.185.522m1.217-1.333v3.999h1.46q.602 0 .998-.237a1.45 1.45 0 0 0 .595-.689q.196-.45.196-1.084 0-.63-.196-1.075a1.43 1.43 0 0 0-.589-.68q-.396-.234-1.005-.234zm.791.645h.563q.371 0 .609.152a.9.9 0 0 1 .354.454q.118.302.118.753a2.3 2.3 0 0 1-.068.592 1.1 1.1 0 0 1-.196.422.8.8 0 0 1-.334.252 1.3 1.3 0 0 1-.483.082h-.563zm3.743 1.763v1.591h-.79V11.85h2.548v.653H7.896v1.117h1.606v.638z" />
-        </svg>
-        <h1 class="display-5 fw-bold text-body-emphasis">Scan QR Codes in PDF Files</h1>
-        <div class="col-lg-6 mx-auto">
-            <p class="lead mb-4">Upload your PDF to scan for QR Codes. Get it back as CSV!</p>
-            <p>With this app you can Scan QR Codes in PDF Files. It will return a CSV with the page number and the information found in the QR Code.</p>
+    <main class="container scan-main">
+        <div class="scan-card">
+            <div class="scan-card__hero">
+                <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" fill="currentColor" class="bi bi-filetype-pdf scan-card__icon" viewBox="0 0 16 16" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M14 4.5V14a2 2 0 0 1-2 2h-1v-1h1a1 1 0 0 0 1-1V4.5h-2A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v9H2V2a2 2 0 0 1 2-2h5.5zM1.6 11.85H0v3.999h.791v-1.342h.803q.43 0 .732-.173.305-.175.463-.474a1.4 1.4 0 0 0 .161-.677q0-.375-.158-.677a1.2 1.2 0 0 0-.46-.477q-.3-.18-.732-.179m.545 1.333a.8.8 0 0 1-.085.38.57.57 0 0 1-.238.241.8.8 0 0 1-.375.082H.788V12.48h.66q.327 0 .512.181.185.183.185.522m1.217-1.333v3.999h1.46q.602 0 .998-.237a1.45 1.45 0 0 0 .595-.689q.196-.45.196-1.084 0-.63-.196-1.075a1.43 1.43 0 0 0-.589-.68q-.396-.234-1.005-.234zm.791.645h.563q.371 0 .609.152a.9.9 0 0 1 .354.454q.118.302.118.753a2.3 2.3 0 0 1-.068.592 1.1 1.1 0 0 1-.196.422.8.8 0 0 1-.334.252 1.3 1.3 0 0 1-.483.082h-.563zm3.743 1.763v1.591h-.79V11.85h2.548v.653H7.896v1.117h1.606v.638z" />
+                </svg>
+                <h1 class="display-6 fw-semibold text-body-emphasis scan-card__title">Scan QR codes in PDF files</h1>
+                <p class="lead scan-card__lead">Upload a PDF to scan for QR codes and download the results as CSV.</p>
+            </div>
+
             <form class="upload-controls" id="pdfScanForm"
                   toolname="pdf-qr-scanner"
                   tooldescription="Select a PDF file and scan it for QR codes. Results are downloaded as CSV. All processing happens locally in the browser.">
-                <label for="pdfInput" class="form-label">Choose PDF file</label>
-                <input class="form-control" type="file" id="pdfInput" name="pdf-file"
-                       accept="application/pdf" required
-                       toolparamdescription="A PDF file to scan for QR codes">
-                <button id="scanButton" class="btn btn-outline-primary" type="button" disabled>Scan for QR Codes</button>
+                <label for="pdfInput" class="drop-zone" id="dropZone">
+                    <span class="drop-zone__hint">Drag a PDF here, or <span class="drop-zone__browse">browse</span></span>
+                    <span class="drop-zone__filename" id="dropZoneFilename" hidden></span>
+                    <input class="drop-zone__input" type="file" id="pdfInput" name="pdf-file"
+                           accept="application/pdf" required
+                           toolparamdescription="A PDF file to scan for QR codes">
+                </label>
+                <button id="scanButton" class="btn btn-primary scan-card__button" type="button" disabled>Scan for QR codes</button>
             </form>
-            <p class="privacy-note">No data leaves your browser. Scanning happens entirely on your device.</p>
+
+            <p class="privacy-note text-center">Runs entirely in your browser — nothing is uploaded.</p>
+
             <div class="scanning-zone" id="scanningZone" hidden>
                 <div class="scan-progress" role="progressbar" id="progressBar"
                      aria-valuenow="0" aria-valuemin="0" aria-valuemax="0"
@@ -68,9 +73,13 @@
                         </div>
                     </div>
                 </div>
+                <p class="scan-status" id="scanStatus" role="status" aria-live="polite" hidden></p>
             </div>
-
         </div>
-    </div>
+    </main>
+
+    <footer class="scan-footer">
+        <p class="scan-footer__text">Privacy by design — your PDF stays on your device.</p>
+    </footer>
 </body>
 </html>
