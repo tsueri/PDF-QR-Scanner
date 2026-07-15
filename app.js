@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressBar = document.getElementById('progressBar');
     const progressFill = document.getElementById('progressFill');
     let pdfDoc = null;
+    let pdfFileName = null;
 
     if (scanForm) {
         scanForm.addEventListener('submit', (e) => e.preventDefault());
@@ -30,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         scanButton.disabled = false;
         resetProgress();
+        pdfFileName = file.name;
         pdfDoc = await pdfjsLib.getDocument(URL.createObjectURL(file)).promise;
     }
 
@@ -78,7 +80,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.setAttribute('href', url);
-        link.setAttribute('download', 'qrcodes.csv');
+        const csvName = pdfFileName ? pdfFileName.replace(/\.pdf$/i, '') + '.csv' : 'qrcodes.csv';
+        link.setAttribute('download', csvName);
         link.style.visibility = 'hidden';
 
         document.body.appendChild(link);
