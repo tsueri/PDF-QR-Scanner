@@ -1,6 +1,7 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import { scanPDF } from './scan.js';
 import { fileResultsToCSV } from './csv.js';
+import { buildZip } from './zip.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     const pdfInput = document.getElementById('pdfInput');
@@ -14,13 +15,37 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileList = document.getElementById('fileList');
     const progressFileInfo = document.getElementById('progressFileInfo');
     const scanStatus = document.getElementById('scanStatus');
+    const batchBar = document.getElementById('batchBar');
+    const batchBarCounter = document.getElementById('batchBarCounter');
+    const batchBarTotal = document.getElementById('batchBarTotal');
+    const batchBarFill = document.getElementById('batchBarFill');
+    const zipReady = document.getElementById('zipReady');
+    const zipReadyLabel = document.getElementById('zipReadyLabel');
+    const zipReadyBtn = document.getElementById('zipReadyBtn');
+    const progressCurrent = document.getElementById('progressCurrent');
+    const progressTotal = document.getElementById('progressTotal');
     const scanButtonLabel = scanButton ? scanButton.textContent : 'Scan for QR codes';
 
     let fileEntries = [];
     let _nextId = 0;
+    let _scanning = false;
 
     if (scanForm) {
-        scanForm.addEventListener('submit', (e) => e.preventDefault());
+        scanForm.addEventListener('submit', function(e) { e.preventDefault(); });
+    }
+
+    function pct(value, total) {
+        return total > 0 ? Math.round((value / total) * 10000) / 100 : 0;
+    }
+
+    function statusText(entry) {
+        switch (entry.state) {
+            case 'queued': return 'Queued';
+            case 'scanning': return entry.page === 0 ? 'Starting\u2026' : 'Scanning p.' + entry.page + '/' + entry.pages;
+            case 'done': return entry.codes + ' code' + (entry.codes === 1 ? '' : 's') + ' found';
+            case 'empty': return 'No QR codes';
+            case 'error': return entry.errorMessage || 'Scan failed';
+        }
     }
 
     function setStatus(message, variant) {
@@ -29,6 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
         scanStatus.classList.remove('scan-status--success', 'scan-status--error', 'scan-status--neutral');
         if (variant) scanStatus.classList.add('scan-status--' + variant);
         scanStatus.hidden = false;
+        scanningZone.hidden = false;
     }
 
     function clearStatus() {
@@ -46,23 +72,31 @@ document.addEventListener('DOMContentLoaded', function() {
         progressBar.classList.remove('scan-progress--complete');
         if (progressFileInfo) progressFileInfo.textContent = '';
         clearStatus();
+        batchBar.hidden = true;
+        zipReady.hidden = true;
     }
 
     function setBusy(busy) {
+        _scanning = busy;
         if (!scanButton) return;
-        scanButton.disabled = busy;
-        scanButton.textContent = busy ? 'Scanning…' : scanButtonLabel;
+        scanButton.disabled = busy || fileEntries.length === 0;
+        scanButton.textContent = busy ? 'Scanning\u2026' : scanButtonLabel;
         if (clearButton) clearButton.disabled = busy;
+        if (pdfInput) pdfInput.disabled = busy;
+    }
+
+    function isBusy() {
+        return _scanning;
     }
 
     function updateScanButton() {
         if (!scanButton) return;
-        scanButton.disabled = fileEntries.length === 0;
+        scanButton.disabled = _scanning || fileEntries.length === 0;
     }
 
     function updateClearButton() {
         if (!clearButton) return;
-        clearButton.hidden = fileEntries.length === 0;
+        clearButton.hidden = fileEntries.length === 0 || _scanning;
     }
 
     async function loadPageCount(entry) {
@@ -81,74 +115,135 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function addFiles(fileListInput) {
+        if (isBusy()) return;
         const names = new Set(fileEntries.map(function(f) { return f.name; }));
-        for (const file of fileListInput) {
+        for (var i = 0; i < fileListInput.length; i++) {
+            var file = fileListInput[i];
             if (file.type !== 'application/pdf') continue;
             if (names.has(file.name)) continue;
             names.add(file.name);
-            const entry = { id: ++_nextId, file: file, pdfDoc: null, name: file.name, pages: 0, loadError: false };
+            var entry = {
+                id: ++_nextId,
+                file: file,
+                pdfDoc: null,
+                name: file.name,
+                pages: 0,
+                loadError: false,
+                state: 'queued',
+                page: 0,
+                codes: 0,
+                results: [],
+                errorMessage: ''
+            };
             fileEntries.push(entry);
             loadPageCount(entry);
         }
+        batchBar.hidden = true;
+        zipReady.hidden = true;
         render();
     }
 
     function removeFile(id) {
+        if (isBusy()) return;
         fileEntries = fileEntries.filter(function(f) { return f.id !== id; });
+        if (fileEntries.length === 0) {
+            batchBar.hidden = true;
+            zipReady.hidden = true;
+        }
         render();
     }
 
     function clearAll() {
+        if (isBusy()) return;
         fileEntries = [];
+        batchBar.hidden = true;
+        zipReady.hidden = true;
+        resetProgress();
         render();
     }
 
     function renderFileList() {
         fileList.innerHTML = '';
 
-        for (const f of fileEntries) {
+        for (var i = 0; i < fileEntries.length; i++) {
+            var f = fileEntries[i];
+
             var pageText;
             if (f.loadError) {
                 pageText = 'Error';
             } else if (f.pages > 0) {
                 pageText = f.pages + 'p';
             } else {
-                pageText = '…';
+                pageText = '\u2026';
             }
 
-            const topDiv = document.createElement('div');
+            var topDiv = document.createElement('div');
             topDiv.className = 'file-row__top';
 
-            const nameSpan = document.createElement('span');
+            var nameSpan = document.createElement('span');
             nameSpan.className = 'file-row__name';
             nameSpan.textContent = f.name;
             topDiv.appendChild(nameSpan);
 
-            const metaSpan = document.createElement('span');
+            var metaSpan = document.createElement('span');
             metaSpan.className = 'file-row__meta';
             metaSpan.textContent = pageText;
             topDiv.appendChild(metaSpan);
 
-            const barDiv = document.createElement('div');
+            var barDiv = document.createElement('div');
             barDiv.className = 'file-row__bar';
 
-            const removeBtn = document.createElement('button');
+            var removeBtn = document.createElement('button');
             removeBtn.className = 'file-remove';
             removeBtn.setAttribute('aria-label', 'Remove');
             removeBtn.textContent = '\u00D7';
-            removeBtn.addEventListener('click', function() { removeFile(f.id); });
+            (function(id) {
+                removeBtn.addEventListener('click', function() { removeFile(id); });
+            })(f.id);
             barDiv.appendChild(removeBtn);
 
-            const row = document.createElement('li');
+            var row = document.createElement('li');
             row.className = 'file-row';
             row.appendChild(topDiv);
-            row.appendChild(barDiv);
+
+            if (f.state) {
+                row.classList.add('is-' + f.state);
+
+                var fileTrack = document.createElement('div');
+                fileTrack.className = 'scan-progress__track filebar';
+                var fileFill = document.createElement('div');
+                fileFill.className = 'scan-progress__fill';
+                fileFill.dataset.fileBar = String(f.id);
+                fileFill.style.width = pct(f.page, f.pages) + '%';
+                fileTrack.appendChild(fileFill);
+                row.appendChild(fileTrack);
+
+                var statusAndBtn = document.createElement('div');
+                statusAndBtn.style.cssText = 'display:flex;align-items:center;gap:.5rem';
+
+                var badge = document.createElement('span');
+                badge.className = 'fstate fstate--' + f.state;
+                badge.dataset.fileStatus = String(f.id);
+                badge.textContent = statusText(f);
+                statusAndBtn.appendChild(badge);
+
+                if (f.state === 'queued') {
+                    removeBtn.disabled = isBusy();
+                    statusAndBtn.appendChild(barDiv);
+                }
+
+                row.appendChild(statusAndBtn);
+            } else {
+                removeBtn.disabled = isBusy();
+                barDiv.appendChild(removeBtn);
+                row.appendChild(barDiv);
+            }
 
             fileList.appendChild(row);
         }
 
         if (fileEntries.length === 0) {
-            const empty = document.createElement('p');
+            var empty = document.createElement('p');
             empty.className = 'batch-empty';
             empty.textContent = 'No files yet \u2014 drop or browse to add some.';
             fileList.appendChild(empty);
@@ -161,6 +256,69 @@ document.addEventListener('DOMContentLoaded', function() {
         renderFileList();
     }
 
+    function liveUpdateProgress(entry) {
+        var fill = fileList.querySelector('[data-file-bar="' + entry.id + '"]');
+        if (fill) {
+            fill.style.width = pct(entry.page, entry.pages) + '%';
+        }
+        var badge = fileList.querySelector('[data-file-status="' + entry.id + '"]');
+        if (badge) {
+            badge.className = 'fstate fstate--' + entry.state;
+            badge.textContent = statusText(entry);
+        }
+        var row = fileList.querySelector('[data-file-bar="' + entry.id + '"]');
+        if (row) {
+            var li = row.closest('.file-row');
+            if (li) {
+                li.className = li.className.replace(/is-\w+/g, '');
+                li.classList.add('is-' + entry.state);
+            }
+        }
+    }
+
+    function updateAggregateBar(done, total) {
+        if (!batchBar) return;
+        batchBar.hidden = false;
+        if (batchBarCounter) batchBarCounter.textContent = String(done);
+        if (batchBarTotal) batchBarTotal.textContent = String(total);
+        if (batchBarFill) {
+            batchBarFill.style.width = pct(done, total) + '%';
+        }
+    }
+
+    function showZipBanner(doneCount, emptyCount, errorCount) {
+        zipReady.hidden = false;
+
+        var bits = [doneCount + ' CSV' + (doneCount === 1 ? '' : 's')];
+        if (emptyCount) bits.push(emptyCount + ' empty');
+        if (errorCount) bits.push(errorCount + ' failed');
+        zipReadyLabel.textContent = 'ZIP ready \u2014 ' + bits.join(' \u00B7 ');
+
+        zipReadyBtn.onclick = function() {
+            triggerZipDownload();
+        };
+    }
+
+    var _zipBlob = null;
+
+    function setZipBlob(blob) {
+        _zipBlob = blob;
+    }
+
+    function triggerZipDownload() {
+        if (!_zipBlob) return;
+        var url = URL.createObjectURL(_zipBlob);
+        var link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'qr-codes.zip');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        zipReadyBtn.textContent = 'Downloaded \u2713';
+        zipReadyBtn.disabled = true;
+    }
+
     pdfInput.addEventListener('change', function() {
         if (pdfInput.files.length) {
             addFiles(pdfInput.files);
@@ -170,7 +328,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     clearButton.addEventListener('click', function() {
         clearAll();
-        resetProgress();
     });
 
     if (dropZone) {
@@ -178,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
             dropZone.addEventListener(evt, function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                dropZone.classList.add('is-dragover');
+                if (!isBusy()) dropZone.classList.add('is-dragover');
             });
         });
         dropZone.addEventListener('dragleave', function(e) {
@@ -200,78 +357,135 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     scanButton.addEventListener('click', async function() {
-        if (fileEntries.length === 0) return;
+        if (fileEntries.length === 0 || isBusy()) return;
 
         var pendingLoads = fileEntries.filter(function(f) { return !f.pdfDoc && !f.loadError; });
         if (pendingLoads.length > 0) {
             await new Promise(function(r) { setTimeout(r, 100); });
         }
 
-        const totalFiles = fileEntries.length;
-        var overallCompleted = 0;
-        var totalPageCount = 0;
         for (var i = 0; i < fileEntries.length; i++) {
-            if (fileEntries[i].pdfDoc) {
-                totalPageCount += fileEntries[i].pages || 0;
+            var entry = fileEntries[i];
+            if (!entry.pdfDoc && !entry.loadError) {
+                entry.state = 'error';
+                entry.errorMessage = 'Could not open \u2014 file may be damaged';
+                entry.results = [];
+            } else if (entry.loadError) {
+                entry.state = 'error';
+                entry.errorMessage = 'Could not open \u2014 file may be damaged';
+                entry.results = [];
+            } else {
+                entry.state = 'queued';
             }
+            entry.page = 0;
+            entry.codes = 0;
+            entry.results = [];
         }
 
+        var scannable = fileEntries.filter(function(f) { return f.pdfDoc && !f.loadError; });
+        var totalFiles = scannable.length;
+        var filesDone = 0;
+
+        setBusy(true);
         scanningZone.hidden = false;
         clearStatus();
-        if (totalPageCount > 0) {
-            progressBar.setAttribute('aria-valuemax', String(totalPageCount));
-            document.getElementById('progressTotal').textContent = String(totalPageCount);
-        }
-        document.getElementById('progressCurrent').textContent = '0';
-        setBusy(true);
+        progressBar.hidden = true;
+        batchBar.hidden = false;
+        progressBar.setAttribute('aria-valuemax', String(totalFiles));
+        if (progressTotal) progressTotal.textContent = String(totalFiles);
+        if (progressCurrent) progressCurrent.textContent = '0';
+        updateAggregateBar(filesDone, totalFiles);
+        zipReady.hidden = true;
+        render();
 
         for (var fi = 0; fi < fileEntries.length; fi++) {
             var entry = fileEntries[fi];
-            if (!entry.pdfDoc) {
-                overallCompleted += entry.pages || 0;
+            if (!entry.pdfDoc || entry.state === 'error') {
                 continue;
             }
 
+            entry.state = 'scanning';
+            entry.page = 0;
+            render();
+
             if (progressFileInfo) {
-                progressFileInfo.textContent = 'File ' + String(fi + 1) + ' of ' + String(totalFiles) + ': ';
+                progressFileInfo.textContent = entry.name + ': ';
             }
 
             try {
-                var pageOffset = overallCompleted;
                 var results = await scanPDF(entry.pdfDoc, {
                     onProgress: function(page, total) {
-                        var pct = ((pageOffset + page) / totalPageCount) * 100;
-                        progressFill.style.width = pct + '%';
-                        progressBar.setAttribute('aria-valuenow', String(pageOffset + page));
-                        var currentEl = document.getElementById('progressCurrent');
-                        if (currentEl) currentEl.textContent = String(pageOffset + page);
+                        entry.page = page;
+                        liveUpdateProgress(entry);
                     }
                 });
 
-                overallCompleted += entry.pages;
-
                 if (results.length > 0) {
+                    entry.state = 'done';
+                    entry.codes = results.length;
+                    entry.results = results;
                     console.log('[QR-Scanner] Found', results.length, 'QR code(s) in', entry.name + ':', results.map(function(r) { return r.data; }));
-                    downloadCSV(results, entry.name);
                 } else {
+                    entry.state = 'empty';
+                    entry.codes = 0;
+                    entry.results = [];
                     console.log('[QR-Scanner] No QR codes found in', entry.name);
                 }
             } catch (err) {
                 console.error('[QR-Scanner] Scan error (' + entry.name + '):', err);
-                overallCompleted += entry.pages;
+                entry.state = 'error';
+                entry.errorMessage = 'Scan failed \u2014 unexpected error';
+                entry.results = [];
+            }
+
+            filesDone++;
+            updateAggregateBar(filesDone, totalFiles);
+            entry.page = entry.pages || 0;
+            liveUpdateProgress(entry);
+            render();
+        }
+
+        var doneCount = fileEntries.filter(function(f) { return f.state === 'done'; }).length;
+        var emptyCount = fileEntries.filter(function(f) { return f.state === 'empty'; }).length;
+        var errorCount = fileEntries.filter(function(f) { return f.state === 'error'; }).length;
+
+        var zipEntries = [];
+        for (var j = 0; j < fileEntries.length; j++) {
+            var e = fileEntries[j];
+            if (e.state === 'done' && e.results.length > 0) {
+                zipEntries.push({
+                    filename: e.name,
+                    csv: fileResultsToCSV(e.name, e.results)
+                });
+            }
+        }
+
+        if (zipEntries.length > 0) {
+            try {
+                var zipBlob = await buildZip(zipEntries);
+                setZipBlob(zipBlob);
+                showZipBanner(doneCount, emptyCount, errorCount);
+            } catch (err) {
+                console.error('[QR-Scanner] ZIP build error:', err);
             }
         }
 
         progressBar.classList.add('scan-progress--complete');
+        batchBarFill.classList.add('scan-progress--complete');
 
-        var scannedCount = fileEntries.filter(function(f) { return f.pdfDoc; }).length;
-        if (scannedCount > 0) {
-            setStatus('Done \u2014 scanned ' + String(scannedCount) + ' file' + (scannedCount === 1 ? '' : 's') + '. CSVs downloaded.', 'success');
+        var parts = [];
+        if (doneCount > 0) parts.push(doneCount + ' done');
+        if (emptyCount > 0) parts.push(emptyCount + ' empty');
+        if (errorCount > 0) parts.push(errorCount + ' failed');
+
+        if (doneCount > 0 || emptyCount > 0 || errorCount > 0) {
+            setStatus('Scan complete \u2014 ' + parts.join(' \u00B7 '), 'success');
         } else {
             setStatus('No valid PDF files to scan.', 'neutral');
         }
 
         setBusy(false);
+        render();
     });
 
     function downloadCSV(results, pdfName) {

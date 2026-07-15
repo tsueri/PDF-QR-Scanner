@@ -58,8 +58,19 @@
                     <button id="scanButton" class="btn btn-primary scan-card__button" type="button" disabled>Scan for QR codes</button>
                     <button id="clearButton" class="btn btn-outline-secondary" type="button" hidden>Clear</button>
                 </div>
+                <div class="batch-bar" id="batchBar" hidden>
+                    <p class="batch-bar__label"><span class="batch-bar__counter" id="batchBarCounter">0</span> of <span id="batchBarTotal">0</span> files done</p>
+                    <div class="scan-progress__track">
+                        <div class="scan-progress__fill" id="batchBarFill" style="width:0%"></div>
+                    </div>
+                </div>
                 <ul class="file-list" id="fileList"></ul>
             </form>
+
+            <div class="zip-ready" id="zipReady" hidden>
+                <span id="zipReadyLabel"></span>
+                <button class="btn btn-success zip-ready__btn" id="zipReadyBtn" type="button">Download ZIP</button>
+            </div>
 
             <p class="privacy-note text-center">Runs entirely in your browser — nothing is uploaded.</p>
 
