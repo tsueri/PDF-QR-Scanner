@@ -32,19 +32,19 @@ cpSync(resolve(root, 'node_modules/pdfjs-dist/standard_fonts'), resolve(vendorDi
 // --------------- source files ---------------
 
 const staticFiles = [
-  'src/app.js',
-  'src/csv.js',
-  'src/zip.js',
-  'src/scan.worker.js',
-  'src/scss/custom.css',
-  'LICENSE',
-  'llms.txt',
+  ['src/app.js', 'app.js'],
+  ['src/csv.js', 'csv.js'],
+  ['src/zip.js', 'zip.js'],
+  ['src/scan.worker.js', 'scan.worker.js'],
+  ['src/scss/custom.css', 'scss/custom.css'],
+  ['LICENSE', 'LICENSE'],
+  ['llms.txt', 'llms.txt'],
 ];
 
-for (const f of staticFiles) {
-  const destPath = resolve(releaseDir, f);
+for (const [src, dst] of staticFiles) {
+  const destPath = resolve(releaseDir, dst);
   mkdirSync(dirname(destPath), { recursive: true });
-  copyFileSync(resolve(root, f), destPath);
+  copyFileSync(resolve(root, src), destPath);
 }
 
 // scan.js with patched paths
