@@ -6,6 +6,7 @@
   "main": "index.html",
   "scripts": {
     "test": "node test-regression.cjs && node test-csv.mjs && node test-zip.mjs",
+    "test:integration": "node test-integration.cjs",
     "build:css": "sass --no-source-map --silence-deprecation=import --silence-deprecation=global-builtin --silence-deprecation=color-functions --silence-deprecation=if-function scss/custom.scss scss/custom.css"
   },
   "keywords": [
