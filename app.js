@@ -30,6 +30,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let _nextId = 0;
     let _scanning = false;
 
+    var MSG_LOAD_ERROR = 'Could not open — file may be damaged';
+    var MSG_PASSWORD = 'Password-protected — cannot read';
+    var MSG_SCAN_ERROR = 'Scan failed — unexpected error';
+
     if (scanForm) {
         scanForm.addEventListener('submit', function(e) { e.preventDefault(); });
     }
@@ -44,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'scanning': return entry.page === 0 ? 'Starting\u2026' : 'Scanning p.' + entry.page + '/' + entry.pages;
             case 'done': return entry.codes + ' code' + (entry.codes === 1 ? '' : 's') + ' found';
             case 'empty': return 'No QR codes';
-            case 'error': return entry.errorMessage || 'Scan failed';
+            case 'error': return entry.errorMessage || MSG_SCAN_ERROR;
         }
     }
 
@@ -110,6 +114,12 @@ document.addEventListener('DOMContentLoaded', function() {
             entry.pages = 0;
             entry.pdfDoc = null;
             entry.loadError = true;
+            entry.state = 'error';
+            if (err instanceof pdfjsLib.PasswordException) {
+                entry.errorMessage = MSG_PASSWORD;
+            } else {
+                entry.errorMessage = MSG_LOAD_ERROR;
+            }
         }
         render();
     }
@@ -369,13 +379,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         for (var i = 0; i < fileEntries.length; i++) {
             var entry = fileEntries[i];
-            if (!entry.pdfDoc && !entry.loadError) {
+            if (entry.loadError) {
                 entry.state = 'error';
-                entry.errorMessage = 'Could not open \u2014 file may be damaged';
+                if (!entry.errorMessage) {
+                    entry.errorMessage = MSG_LOAD_ERROR;
+                }
                 entry.results = [];
-            } else if (entry.loadError) {
+            } else if (!entry.pdfDoc) {
                 entry.state = 'error';
-                entry.errorMessage = 'Could not open \u2014 file may be damaged';
+                entry.errorMessage = entry.errorMessage || MSG_LOAD_ERROR;
                 entry.results = [];
             } else {
                 entry.state = 'queued';
@@ -438,7 +450,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (err) {
                 console.error('[QR-Scanner] Scan error (' + entry.name + '):', err);
                 entry.state = 'error';
-                entry.errorMessage = 'Scan failed \u2014 unexpected error';
+                entry.errorMessage = MSG_SCAN_ERROR;
                 entry.results = [];
             }
 
