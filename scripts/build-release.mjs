@@ -1,7 +1,7 @@
-import { readFileSync, writeFileSync, copyFileSync, cpSync, mkdirSync, rmSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
+import { readFileSync, writeFileSync, copyFileSync, cpSync, mkdirSync, rmSync, readdirSync } from 'node:fs';
+import { resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execSync } from 'node:child_process';
+import JSZip from 'jszip';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
@@ -85,14 +85,25 @@ writeFileSync(resolve(releaseDir, 'index.html'), indexHtml);
 
 // --------------- zip ---------------
 
+function addDir(zip, dir, base) {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = resolve(dir, entry.name);
+    const archivePath = relative(base, fullPath);
+    if (entry.isDirectory()) {
+      addDir(zip, fullPath, base);
+    } else {
+      zip.file(archivePath, readFileSync(fullPath));
+    }
+  }
+}
+
 const version = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version;
 const zipName = `pdf-qr-scanner-v${version}.zip`;
 const zipPath = resolve(root, zipName);
 
-if (process.platform === 'linux' || process.platform === 'darwin') {
-  execSync(`zip -r "${zipPath}" .`, { cwd: releaseDir, stdio: 'inherit' });
-} else {
-  execSync(`powershell -Command "Compress-Archive -Path '${releaseDir}\\*' -DestinationPath '${zipPath}'"`, { stdio: 'inherit' });
-}
+const zip = new JSZip();
+addDir(zip, releaseDir, releaseDir);
+const zipBuf = await zip.generateAsync({ type: 'nodebuffer' });
+writeFileSync(zipPath, zipBuf);
 
 console.log(`\nRelease zip created: ${zipName}`);
