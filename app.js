@@ -4,10 +4,15 @@ import { scanPDF } from './scan.js';
 document.addEventListener('DOMContentLoaded', function() {
     const pdfInput = document.getElementById('pdfInput');
     const scanButton = document.getElementById('scanButton');
+    const scanForm = document.getElementById('pdfScanForm');
     const scanningZone = document.getElementById('scanningZone');
     const progressBar = document.getElementById('progressBar');
     const progressFill = document.getElementById('progressFill');
     let pdfDoc = null;
+
+    if (scanForm) {
+        scanForm.addEventListener('submit', (e) => e.preventDefault());
+    }
 
     function resetProgress() {
         scanningZone.hidden = true;
@@ -71,5 +76,36 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+    if (document.modelContext) {
+        document.modelContext.registerTool({
+            name: "scan-loaded-pdf",
+            description: "Scan the currently loaded PDF file for QR codes and return the found codes with their page numbers.",
+            inputSchema: {
+                type: "object",
+                properties: {}
+            },
+            async execute() {
+                if (!pdfDoc) {
+                    return {
+                        content: [{ type: "text", text: "No PDF file loaded. Please select a PDF file first." }]
+                    };
+                }
+                const results = await scanPDF(pdfDoc, {});
+                if (results.length === 0) {
+                    return {
+                        content: [{ type: "text", text: "No QR codes found in the PDF." }]
+                    };
+                }
+                const csv = 'page,qr-code\n' + results.map(r => `"${r.page}","${r.data}"`).join('\n');
+                return {
+                    content: [{
+                        type: "text",
+                        text: csv
+                    }]
+                };
+            }
+        }).catch(err => console.warn('WebMCP tool registration failed:', err));
     }
 });

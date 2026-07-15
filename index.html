@@ -44,10 +44,15 @@
         <div class="col-lg-6 mx-auto">
             <p class="lead mb-4">Upload your PDF to scan for QR Codes. Get it back as CSV!</p>
             <p>With this app you can Scan QR Codes in PDF Files. It will return a CSV with the page number and the information found in the QR Code.</p>
-            <div class="upload-controls">
-                <input class="form-control" type="file" id="pdfInput" accept="application/pdf">
-                <button id="scanButton" class="btn btn-outline-primary" disabled>Scan for QR Codes</button>
-            </div>
+            <form class="upload-controls" id="pdfScanForm"
+                  toolname="pdf-qr-scanner"
+                  tooldescription="Select a PDF file and scan it for QR codes. Results are downloaded as CSV. All processing happens locally in the browser.">
+                <label for="pdfInput" class="form-label">Choose PDF file</label>
+                <input class="form-control" type="file" id="pdfInput" name="pdf-file"
+                       accept="application/pdf" required
+                       toolparamdescription="A PDF file to scan for QR codes">
+                <button id="scanButton" class="btn btn-outline-primary" type="button" disabled>Scan for QR Codes</button>
+            </form>
             <p class="privacy-note">No data leaves your browser. Scanning happens entirely on your device.</p>
             <div class="scanning-zone" id="scanningZone" hidden>
                 <div class="scan-progress" role="progressbar" id="progressBar"

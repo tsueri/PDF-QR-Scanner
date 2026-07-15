@@ -8,17 +8,22 @@
 - `scss/custom.css` — compiled Bootstrap 5 CSS.
 - Libraries: pdfjs-dist (v4.x, PDF rendering), jsQR (v1.x, QR decoding). Loaded via import map and script tag, served from `node_modules/`.
 
-## Architecture
-
 Single-page, zero-build, ESM module graph. `app.js` is the entry point — it imports `scanPDF` from `scan.js`, both import `pdfjs-dist` via an `<script type="importmap">`. jsQR is loaded as a regular `<script>` that sets `globalThis.jsQR`. No framework, no bundler.
 
-## Scan pipeline
-
+Scan pipeline:
 1. User selects PDF → `pdfjsLib.getDocument()` parses it in a web worker.
 2. `scanPDF` iterates pages, renders each to an offscreen canvas, runs `jsQR` on pixel data.
 3. Results (`{ page, data }[]`) returned to caller.
 4. Caller formats as CSV and triggers browser download.
 
----
+## Docs
 
-https://github.com/tsueri/PDF-QR-Scanner/blob/main/llms.txt
+- [index.html](index.html): Single-page UI — file input, scan button, progress bar
+- [app.js](app.js): UI orchestrator — file selection, scanning, progress updates, CSV download
+- [scan.js](scan.js): Deep PDF scanning module with pdfjs-dist rendering and jsQR decoding
+
+## Optional
+
+- [GitHub Repository](https://github.com/tsueri/PDF-QR-Scanner): Full source code, issue tracker, and deployment info
+- [pdfjs-dist](https://mozilla.github.io/pdf.js/): PDF.js library documentation
+- [jsQR](https://github.com/cozmo/jsQR): jsQR library documentation
