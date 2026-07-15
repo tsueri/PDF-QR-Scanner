@@ -4,3 +4,5 @@ node_modules/
 *.map
 *.log
 .codegraph/
+release/
+pdf-qr-scanner-v*.zip
