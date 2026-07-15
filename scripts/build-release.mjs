@@ -39,6 +39,7 @@ const staticFiles = [
   'scss/custom.css',
   '.htaccess',
   'LICENSE',
+  'llms.txt',
 ];
 
 for (const f of staticFiles) {
