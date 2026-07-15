@@ -4,7 +4,8 @@
   "description": "Scan QR Codes in PDF and get it back as CSV.",
   "main": "index.html",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:css": "sass --no-source-map --silence-deprecation=import --silence-deprecation=global-builtin --silence-deprecation=color-functions --silence-deprecation=if-function scss/custom.scss scss/custom.css"
   },
   "keywords": [
     "pdf",
@@ -15,7 +16,7 @@
   "author": "Jonas Zürcher",
   "license": "MIT",
   "dependencies": {
-    "bootstrap": "^5.3.3",
+    "bootstrap": "^5.3.8",
     "jsqr": "^1.4.0",
     "pdfjs-dist": "^4.10.38"
   }

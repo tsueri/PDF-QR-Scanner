@@ -44,17 +44,25 @@
         <div class="col-lg-6 mx-auto">
             <p class="lead mb-4">Upload your PDF to scan for QR Codes. Get it back as CSV!</p>
             <p>With this app you can Scan QR Codes in PDF Files. It will return a CSV with the page number and the information found in the QR Code.</p>
-            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                <div class="mb-3">
-                    <input class="form-control" type="file" id="pdfInput">
-                </div>
-                <div class="mb-3">
-                    <button id="scanButton" class="btn btn-outline-primary px-4" disabled>Scan for QR Codes</button>
-                </div>
+            <div class="upload-controls">
+                <input class="form-control" type="file" id="pdfInput" accept="application/pdf">
+                <button id="scanButton" class="btn btn-outline-primary" disabled>Scan for QR Codes</button>
             </div>
-            <div><small class="muted">This app does not collect any data. No data is transferred to this service. The scan is performed on the client side.</small></div>
-            <div>
-                <progress class="" id="progressBar" role="progressbar" value="0" max="100" style="width: 100%;"></progress>
+            <p class="privacy-note">No data leaves your browser. Scanning happens entirely on your device.</p>
+            <div class="scanning-zone" id="scanningZone" hidden>
+                <div class="scan-progress" role="progressbar" id="progressBar"
+                     aria-valuenow="0" aria-valuemin="0" aria-valuemax="0"
+                     aria-label="PDF scanning progress">
+                    <p class="scan-progress__label" id="progressLabel">
+                        Scanning page <span class="scan-progress__counter" id="progressCurrent">0</span>
+                        of <span class="scan-progress__counter" id="progressTotal">0</span>
+                    </p>
+                    <div class="scan-progress__track">
+                        <div class="scan-progress__fill" id="progressFill">
+                            <span class="scan-progress__beam"></span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
         </div>

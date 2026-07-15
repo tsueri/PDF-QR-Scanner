@@ -4,8 +4,18 @@ import { scanPDF } from './scan.js';
 document.addEventListener('DOMContentLoaded', function() {
     const pdfInput = document.getElementById('pdfInput');
     const scanButton = document.getElementById('scanButton');
+    const scanningZone = document.getElementById('scanningZone');
     const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
     let pdfDoc = null;
+
+    function resetProgress() {
+        scanningZone.hidden = true;
+        progressFill.style.width = '0%';
+        progressBar.setAttribute('aria-valuenow', '0');
+        progressBar.setAttribute('aria-valuemax', '0');
+        progressBar.classList.remove('scan-progress--complete');
+    }
 
     async function onFileSelected(event) {
         const file = event.target.files[0];
@@ -14,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         scanButton.disabled = false;
-        progressBar.value = 0;
+        resetProgress();
         pdfDoc = await pdfjsLib.getDocument(URL.createObjectURL(file)).promise;
     }
 
@@ -23,16 +33,26 @@ document.addEventListener('DOMContentLoaded', function() {
     scanButton.addEventListener('click', async () => {
         if (!pdfDoc) return;
 
-        progressBar.max = pdfDoc.numPages;
+        const total = pdfDoc.numPages;
+        scanningZone.hidden = false;
+        progressBar.setAttribute('aria-valuemax', total);
+        document.getElementById('progressTotal').textContent = total;
+        document.getElementById('progressCurrent').textContent = '0';
 
         const results = await scanPDF(pdfDoc, {
             onProgress: (page, total) => {
-                progressBar.value = page;
+                const pct = (page / total) * 100;
+                progressFill.style.width = pct + '%';
+                progressBar.setAttribute('aria-valuenow', page);
+                const currentEl = document.getElementById('progressCurrent');
+                if (currentEl) currentEl.textContent = page;
             }
         });
 
+        progressBar.classList.add('scan-progress--complete');
+
         if (results.length > 0) {
-            downloadCSV(results);
+            setTimeout(() => downloadCSV(results), 150);
         } else {
             alert('No QR codes found.');
         }
