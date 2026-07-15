@@ -82,7 +82,7 @@ class WorkerPool {
 async function renderPage(page, scale) {
   const viewport = page.getViewport({ scale });
   const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
   canvas.height = viewport.height;
   canvas.width = viewport.width;
   await page.render({ canvasContext: ctx, viewport }).promise;
@@ -143,7 +143,7 @@ function rotateCanvas(sourceCanvas, angleDeg) {
   const rotated = document.createElement('canvas');
   rotated.width = newW;
   rotated.height = newH;
-  const rCtx = rotated.getContext('2d');
+  const rCtx = rotated.getContext('2d', { willReadFrequently: true });
   rCtx.imageSmoothingEnabled = false;
 
   rCtx.translate(newW / 2, newH / 2);
