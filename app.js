@@ -290,10 +290,13 @@ document.addEventListener('DOMContentLoaded', function() {
         zipReady.hidden = false;
 
         var bits = [doneCount + ' CSV' + (doneCount === 1 ? '' : 's')];
-        if (emptyCount) bits.push(emptyCount + ' empty');
+        if (emptyCount) bits.push(emptyCount + ' empty skipped');
         if (errorCount) bits.push(errorCount + ' failed');
         zipReadyLabel.textContent = 'ZIP ready \u2014 ' + bits.join(' \u00B7 ');
 
+        var hasDownload = !!_zipBlob;
+        zipReadyBtn.textContent = hasDownload ? 'Download ZIP' : 'Nothing to download';
+        zipReadyBtn.disabled = !hasDownload;
         zipReadyBtn.onclick = function() {
             triggerZipDownload();
         };
@@ -387,6 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var filesDone = 0;
 
         setBusy(true);
+        _zipBlob = null;
         scanningZone.hidden = false;
         clearStatus();
         progressBar.hidden = true;
@@ -464,11 +468,12 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 var zipBlob = await buildZip(zipEntries);
                 setZipBlob(zipBlob);
-                showZipBanner(doneCount, emptyCount, errorCount);
             } catch (err) {
                 console.error('[QR-Scanner] ZIP build error:', err);
             }
         }
+
+        showZipBanner(doneCount, emptyCount, errorCount);
 
         progressBar.classList.add('scan-progress--complete');
         batchBarFill.classList.add('scan-progress--complete');
