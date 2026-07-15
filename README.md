@@ -1,6 +1,6 @@
 # PDF QR Scanner
 
-Welcome to **PDF QR Scanner**, an open-source project designed to scan PDF files for QR codes and present any found as a CSV file. This lightweight application is built using HTML, CSS, and JavaScript, ensuring it can run seamlessly without any additional dependencies. Try it [here](https://qrscan.campa.tools/).
+Welcome to **PDF QR Scanner**, an open-source project designed to scan PDF files for QR codes and present any found as a CSV file. The app runs entirely client-side — no data is ever sent to a server. Try it [here](https://qrscan.campa.tools/).
 
 ## Overview
 
@@ -10,21 +10,27 @@ The main purpose of this project is to provide users with a straightforward tool
 
 Getting started with PDF QR Scanner is incredibly simple:
 
-1. **Clone the Repository**: Use Git to clone the repository into your desired webroot directory where the application should run.
+1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/tsueri/pdf-qr-scanner.git /path/to/webroot
+   git clone https://github.com/tsueri/PDF-QR-Scanner.git
+   cd PDF-QR-Scanner
    npm install
    ```
 
-2. **Access the Application**: Open your web browser and navigate to the location of the cloned project in your server's root directory.
+2. **Serve the application**: The app uses ES modules and web workers, so it must be served over HTTP — opening `index.html` directly from disk won't work. Use any static file server:
 
-Since the app is built solely with HTML, CSS, and JavaScript, there are no additional installation requirements or dependencies needed.
+   ```bash
+   python3 -m http.server 8080
+   ```
+
+   Then open `http://localhost:8080` in your browser.
 
 ## Features
 
-- **Easy Setup**: No complex installations required.
-- **QR Code Scanning**: Efficiently scans PDF files for QR codes.
-- **CSV Output**: Presents found QR codes in a user-friendly CSV format.
+- **Client-side processing**: PDF rendering and QR decoding happen entirely in your browser. No data is uploaded anywhere.
+- **Multi-page PDF support**: Scans every page of the document.
+- **CSV output**: Results include page number and decoded QR data.
+- **Zero build step**: Plain ES modules served directly — no bundler required.
 
 ## Limitation
 
@@ -42,10 +48,10 @@ We welcome contributions! If you have any suggestions, bug reports, or feature r
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](https://github.com/tsueri/pdf-qr-scanner/blob/main/LICENSE) file for more details.
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/tsueri/PDF-QR-Scanner/blob/main/LICENSE) file for more details.
 
 ## Support
 
-For any questions or support, please create an issue in the [GitHub repository](https://github.com/tsueri/pdf-qr-scanner/issues).
+For any questions or support, please create an issue in the [GitHub repository](https://github.com/tsueri/PDF-QR-Scanner/issues).
 
 Thank you for using PDF QR Scanner! Your feedback and contributions are greatly appreciated. 🚀
