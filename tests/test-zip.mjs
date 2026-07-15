@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 
 globalThis.JSZip = JSZip;
 
-const { buildZip } = await import('./zip.js');
+const { buildZip } = await import('../src/zip.js');
 
 var passed = 0;
 var failed = 0;

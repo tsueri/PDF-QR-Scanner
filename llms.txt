@@ -3,12 +3,12 @@
 > Client-side web app that scans QR codes from PDF files and exports results as CSV. No backend, no build step, no telemetry.
 
 - `index.html` — single-page UI: file input, scan button, progress bar. Uses Bootstrap 5 for styling.
-- `app.js` — UI orchestrator: file selection, calling scanPDF, progress updates, CSV download.
-- `scan.js` — deep PDF scanning module. Exports `scanPDF(pdfDoc, options?) → Promise<ScanResult[]>`. Renders PDF pages as offscreen canvases via pdfjs-dist, decodes QR codes via jsQR.
-- `scss/custom.css` — compiled Bootstrap 5 CSS.
+- `src/app.js` — UI orchestrator: file selection, calling scanPDF, progress updates, CSV download.
+- `src/scan.js` — deep PDF scanning module. Exports `scanPDF(pdfDoc, options?) → Promise<ScanResult[]>`. Renders PDF pages as offscreen canvases via pdfjs-dist, decodes QR codes via jsQR.
+- `src/scss/custom.css` — compiled Bootstrap 5 CSS.
 - Libraries: pdfjs-dist (v4.x, PDF rendering), jsQR (v1.x, QR decoding). Loaded via import map and script tag, served from `node_modules/`.
 
-Single-page, zero-build, ESM module graph. `app.js` is the entry point — it imports `scanPDF` from `scan.js`, both import `pdfjs-dist` via an `<script type="importmap">`. jsQR is loaded as a regular `<script>` that sets `globalThis.jsQR`. No framework, no bundler.
+Single-page, zero-build, ESM module graph. `src/app.js` is the entry point — it imports `scanPDF` from `src/scan.js`, both import `pdfjs-dist` via an `<script type="importmap">`. jsQR is loaded as a regular `<script>` that sets `globalThis.jsQR`. No framework, no bundler.
 
 Scan pipeline:
 1. User selects PDF → `pdfjsLib.getDocument()` parses it in a web worker.
@@ -19,8 +19,8 @@ Scan pipeline:
 ## Docs
 
 - [index.html](index.html): Single-page UI — file input, scan button, progress bar
-- [app.js](app.js): UI orchestrator — file selection, scanning, progress updates, CSV download
-- [scan.js](scan.js): Deep PDF scanning module with pdfjs-dist rendering and jsQR decoding
+- [src/app.js](src/app.js): UI orchestrator — file selection, scanning, progress updates, CSV download
+- [src/scan.js](src/scan.js): Deep PDF scanning module with pdfjs-dist rendering and jsQR decoding
 
 ## Optional
 

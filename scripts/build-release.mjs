@@ -32,11 +32,11 @@ cpSync(resolve(root, 'node_modules/pdfjs-dist/standard_fonts'), resolve(vendorDi
 // --------------- source files ---------------
 
 const staticFiles = [
-  'app.js',
-  'csv.js',
-  'zip.js',
-  'scan.worker.js',
-  'scss/custom.css',
+  'src/app.js',
+  'src/csv.js',
+  'src/zip.js',
+  'src/scan.worker.js',
+  'src/scss/custom.css',
   'LICENSE',
   'llms.txt',
 ];
@@ -48,13 +48,13 @@ for (const f of staticFiles) {
 }
 
 // scan.js with patched paths
-let scanJs = readFileSync(resolve(root, 'scan.js'), 'utf8');
+let scanJs = readFileSync(resolve(root, 'src/scan.js'), 'utf8');
 scanJs = scanJs.replace(
-  "'./node_modules/pdfjs-dist/build/pdf.worker.mjs'",
+  "'../node_modules/pdfjs-dist/build/pdf.worker.mjs'",
   "'./vendor/pdf.worker.mjs'"
 );
 scanJs = scanJs.replace(
-  "'./node_modules/jsqr/dist/jsQR.js'",
+  "'../node_modules/jsqr/dist/jsQR.js'",
   "'./vendor/jsQR.js'"
 );
 writeFileSync(resolve(releaseDir, 'scan.js'), scanJs);
@@ -72,6 +72,14 @@ indexHtml = indexHtml.replace(
 indexHtml = indexHtml.replace(
   '"node_modules/jszip/dist/jszip.min.js"',
   '"vendor/jszip.min.js"'
+);
+indexHtml = indexHtml.replace(
+  'src="src/app.js"',
+  'src="app.js"'
+);
+indexHtml = indexHtml.replace(
+  'href="src/scss/custom.css"',
+  'href="scss/custom.css"'
 );
 writeFileSync(resolve(releaseDir, 'index.html'), indexHtml);
 

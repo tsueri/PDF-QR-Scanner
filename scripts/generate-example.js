@@ -20,7 +20,7 @@ async function main() {
   const sinR = Math.sin(rad);
 
   const doc = new PDFDocument({ size: 'A4' });
-  const stream = fs.createWriteStream('example.pdf');
+  const stream = fs.createWriteStream('fixtures/example.pdf');
   doc.pipe(stream);
 
   // Center the rotated QR code on the page so it doesn't clip

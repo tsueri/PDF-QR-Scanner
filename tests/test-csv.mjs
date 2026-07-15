@@ -1,5 +1,5 @@
 (async function () {
-    const { fileResultsToCSV } = await import('./csv.js');
+    const { fileResultsToCSV } = await import('../src/csv.js');
 
     var passed = 0;
     var failed = 0;

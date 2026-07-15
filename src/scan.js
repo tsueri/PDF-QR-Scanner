@@ -1,7 +1,7 @@
 import * as pdfjsLib from 'pdfjs-dist';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  './node_modules/pdfjs-dist/build/pdf.worker.mjs',
+  '../node_modules/pdfjs-dist/build/pdf.worker.mjs',
   import.meta.url
 ).toString();
 
@@ -160,7 +160,7 @@ let _poolPromise = null;
 
 async function _getWorkerUrl() {
   const [jsqrResp, workerResp] = await Promise.all([
-    fetch('./node_modules/jsqr/dist/jsQR.js'),
+    fetch(new URL('../node_modules/jsqr/dist/jsQR.js', import.meta.url)),
     fetch(new URL('./scan.worker.js', import.meta.url)),
   ]);
 
