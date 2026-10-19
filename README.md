@@ -41,6 +41,10 @@ Getting started with PDF QR Scanner is incredibly simple:
 2. Upload the PDF files you wish to scan for QR codes.
 3. Wait for the scan to complete, then download the ZIP containing one CSV per file with results.
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for release notes.
+
 ## Contributing
 
 We welcome contributions! If you have any suggestions, bug reports, or feature requests, please feel free to open an issue on GitHub. For code contributions, submit a pull request.
