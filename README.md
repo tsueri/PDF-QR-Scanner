@@ -29,15 +29,17 @@ Getting started with PDF QR Scanner is incredibly simple:
 
 - **Client-side processing**: PDF rendering and QR decoding happen entirely in your browser. No data is uploaded anywhere.
 - **Multi-page PDF support**: Scans every page of the document.
+- **Multiple files per run**: Batch-scan several PDFs with per-file progress.
 - **Every QR code on every page**: Finds all QR codes on a page, not just the first one.
-- **CSV output**: One row per code, with the page number and decoded QR data.
-- **Zero build step**: Plain ES modules served directly — no bundler required.
+- **CSV output**: One row per code, with the page number and decoded QR data. Results are downloaded as a ZIP containing one CSV per file.
+- **Self-hosted decoder**: The WebAssembly decoder ships with the app — no third-party requests.
+- **Zero build step at runtime**: Plain ES modules served directly — no bundler required to run the app.
 
 ## Usage
 
 1. Open the application in your web browser.
-2. Upload PDF files you wish to scan for QR codes.
-3. Wait for the scan to complete and view the results in CSV format.
+2. Upload the PDF files you wish to scan for QR codes.
+3. Wait for the scan to complete, then download the ZIP containing one CSV per file with results.
 
 ## Contributing
 

@@ -15,10 +15,8 @@ Single-context repo:
 
 ```
 /
-├── CONTEXT.md
-├── docs/adr/
-│   ├── 0001-event-sourced-orders.md
-│   └── 0002-postgres-for-write-model.md
+├── CONTEXT.md          (created lazily when domain terms are resolved)
+├── docs/adr/           (created lazily when decisions are recorded)
 └── src/
 ```
 
@@ -32,4 +30,4 @@ If the concept you need isn't in the glossary yet, that's a signal — either yo
 
 If your output contradicts an existing ADR, surface it explicitly rather than silently overriding:
 
-> _Contradicts ADR-0007 (event-sourced orders) — but worth reopening because…_
+> _Contradicts ADR-0007 (the recorded decision) — but worth reopening because…_

@@ -10,4 +10,4 @@ Defaults: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `w
 
 ### Domain docs
 
-Single-context: `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+Single-context: `CONTEXT.md` + `docs/adr/` when they exist (neither exists yet — the domain-modeling skill creates them lazily). See `docs/agents/domain.md`.
