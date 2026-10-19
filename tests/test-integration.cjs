@@ -48,20 +48,17 @@ async function qrPngBuffer(data, size) {
 
 function writePDF(pages, filePath) {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ size: 'A4' });
+    const doc = new PDFDocument({ autoFirstPage: false });
     const stream = fs.createWriteStream(filePath);
     doc.pipe(stream);
 
-    pages.forEach(function (pg, idx) {
-      if (idx > 0) doc.addPage();
-      if (pg.image) {
-        const imgW = Math.min(pg.image.width || 200, 400);
-        const x = (doc.page.width - imgW) / 2;
-        const y = (doc.page.height - imgW) / 2;
-        doc.image(pg.image.buffer, x, y, { width: imgW });
-      }
+    pages.forEach(function (pg) {
+      doc.addPage({ size: pg.size || 'A4', layout: pg.layout || 'portrait' });
+      (pg.images || []).forEach(function (img) {
+        doc.image(img.buffer, img.x, img.y, { width: img.width });
+      });
       if (pg.text) {
-        doc.fontSize(14).text(pg.text, 50, 50);
+        doc.fontSize(14).text(pg.text, pg.textX == null ? 50 : pg.textX, pg.textY == null ? 50 : pg.textY);
       }
     });
 
@@ -75,17 +72,27 @@ async function genSyntheticPDFs() {
   fs.mkdirSync(PDF_DIR, { recursive: true });
 
   const qrHello = await qrPngBuffer('hello', 260);
+  const qrAlpha = await qrPngBuffer('alpha', 260);
   const qrWorld = await qrPngBuffer('world', 260);
   const qrDataB = await qrPngBuffer('data-from-b', 260);
 
   const files = {};
 
-  // file-a.pdf — 2 pages, each with a different QR code
+  // file-a.pdf — 2 pages: page 1 carries two codes, page 2 one code
   files.fileA = path.join(PDF_DIR, 'qr-file-a.pdf');
   await writePDF(
     [
-      { image: { buffer: qrHello, width: 260 }, text: 'Page 1' },
-      { image: { buffer: qrWorld, width: 260 }, text: 'Page 2' },
+      {
+        images: [
+          { buffer: qrHello, width: 260, x: 60, y: 80 },
+          { buffer: qrAlpha, width: 260, x: 300, y: 500 },
+        ],
+        text: 'Page 1',
+      },
+      {
+        images: [{ buffer: qrWorld, width: 260, x: 167, y: 290 }],
+        text: 'Page 2',
+      },
     ],
     files.fileA
   );
@@ -93,9 +100,25 @@ async function genSyntheticPDFs() {
   // file-b.pdf — 1 page, one QR code
   files.fileB = path.join(PDF_DIR, 'qr-file-b.pdf');
   await writePDF(
-    [{ image: { buffer: qrDataB, width: 260 }, text: 'Page 1' }],
+    [{ images: [{ buffer: qrDataB, width: 260, x: 167, y: 290 }], text: 'Page 1' }],
     files.fileB
   );
+
+  // multi.pdf — A5-landscape signature cards: two codes per page, one small
+  files.multi = path.join(PDF_DIR, 'multi-qr.pdf');
+  const multiPages = [];
+  for (var p = 1; p <= 2; p++) {
+    multiPages.push({
+      size: 'A5',
+      layout: 'landscape',
+      images: [
+        { buffer: await qrPngBuffer('small-' + p, 70), width: 70, x: 480, y: 30 },
+        { buffer: await qrPngBuffer('big-' + p, 180), width: 180, x: 50, y: 210 },
+      ],
+      text: 'Card ' + p,
+    });
+  }
+  await writePDF(multiPages, files.multi);
 
   // empty.pdf — 1 page, no QR
   files.empty = path.join(PDF_DIR, 'empty-file.pdf');
@@ -113,7 +136,7 @@ async function genSyntheticPDFs() {
 // ---------------------------------------------------------------------------
 
 function startServer(port) {
-  const root = __dirname;
+  const root = path.resolve(__dirname, '..');
   const mimeMap = {
     '.html': 'text/html',
     '.js': 'text/javascript',
@@ -123,6 +146,7 @@ function startServer(port) {
     '.map': 'application/json',
     '.svg': 'image/svg+xml',
     '.png': 'image/png',
+    '.wasm': 'application/wasm',
   };
 
   const server = http.createServer(function (req, res) {
@@ -217,7 +241,7 @@ async function verifyZipContents(zipPath, expectedEntries, label) {
 // ---------------------------------------------------------------------------
 
 async function testCollisionNaming() {
-  const { buildZip } = await import('./zip.js');
+  const { buildZip } = await import('../src/zip.js');
 
   const blob = await buildZip([
     { filename: 'report.pdf', csv: 'page,qr-code\n"1","first"' },
@@ -267,17 +291,17 @@ async function main() {
     // --- upload files -------------------------------------------------------
     console.log('\n--- Uploading files ---');
     const fileInput = await page.$('#pdfInput');
-    await fileInput.uploadFile(pdfs.fileA, pdfs.fileB, pdfs.empty);
+    await fileInput.uploadFile(pdfs.fileA, pdfs.fileB, pdfs.multi, pdfs.empty);
 
     // Wait for file list to show page counts (not "…")
     await page.waitForFunction(function () {
       var metas = document.querySelectorAll('.file-row__meta');
-      if (metas.length < 3) return false;
+      if (metas.length < 4) return false;
       return Array.from(metas).every(function (m) { return !m.textContent.includes('\u2026'); });
     }, { timeout: 15000 });
 
     const fileRows = await page.$$('.file-row');
-    assert(fileRows.length === 3, '3 files listed after upload');
+    assert(fileRows.length === 4, '4 files listed after upload');
 
     // --- scan all -----------------------------------------------------------
     console.log('\n--- Scanning all files ---');
@@ -301,13 +325,16 @@ async function main() {
       return els.map(function (el) { return el.className; });
     });
 
-    // Should have: "2 codes found" (file-a), "1 code found" (file-b), "No QR codes" (empty)
-    var hasTwoCodes = badgeTexts.some(function (t) { return t === '2 codes found'; });
+    // Should have: "3 codes found" (file-a), "1 code found" (file-b),
+    // "4 codes found" (multi, two per page), "No QR codes" (empty)
+    var hasThreeCodes = badgeTexts.some(function (t) { return t === '3 codes found'; });
     var hasOneCode = badgeTexts.some(function (t) { return t === '1 code found'; });
+    var hasFourCodes = badgeTexts.some(function (t) { return t === '4 codes found'; });
     var hasNoCodes = badgeTexts.some(function (t) { return t === 'No QR codes'; });
 
-    assert(hasTwoCodes, 'Per-file badge shows "2 codes found"');
+    assert(hasThreeCodes, 'Multi-QR page badge shows "3 codes found"');
     assert(hasOneCode, 'Per-file badge shows "1 code found"');
+    assert(hasFourCodes, 'Card fixture badge shows "4 codes found" (2 per page)');
     assert(hasNoCodes, 'Per-file badge shows "No QR codes"');
 
     var hasDoneClass = badgeClasses.some(function (c) { return c.includes('fstate--done'); });
@@ -321,8 +348,8 @@ async function main() {
     var batchBarCounter = await page.$eval('#batchBarCounter', function (el) { return el.textContent; });
     var batchBarTotal = await page.$eval('#batchBarTotal', function (el) { return el.textContent; });
 
-    assert(batchBarCounter === '3', 'Aggregate bar counter: 3');
-    assert(batchBarTotal === '3', 'Aggregate bar total: 3');
+    assert(batchBarCounter === '4', 'Aggregate bar counter: 4');
+    assert(batchBarTotal === '4', 'Aggregate bar total: 4');
 
     // --- verify ZIP banner --------------------------------------------------
     console.log('\n--- Verifying ZIP banner ---');
@@ -331,7 +358,7 @@ async function main() {
     var zipBtnDisabled = await page.$eval('#zipReadyBtn', function (el) { return el.disabled; });
 
     assert(zipReadyLabel.includes('ZIP ready'), 'ZIP banner shows "ZIP ready"');
-    assert(zipReadyLabel.includes('2 CSV'), 'ZIP banner mentions "2 CSV"');
+    assert(zipReadyLabel.includes('3 CSV'), 'ZIP banner mentions "3 CSV"');
     assert(zipReadyLabel.includes('1 empty skipped'), 'ZIP banner mentions skipped empty file');
     assert(!zipBtnDisabled, 'Download ZIP button is enabled');
 
@@ -374,8 +401,9 @@ async function main() {
     await verifyZipContents(
       zipPath,
       [
-        { name: 'qr-file-a.csv', content: 'page,qr-code\n"1","hello"\n"2","world"' },
+        { name: 'qr-file-a.csv', content: 'page,qr-code\n"1","hello"\n"1","alpha"\n"2","world"' },
         { name: 'qr-file-b.csv', content: 'page,qr-code\n"1","data-from-b"' },
+        { name: 'multi-qr.csv', content: 'page,qr-code\n"1","small-1"\n"1","big-1"\n"2","small-2"\n"2","big-2"' },
       ],
       'Downloaded ZIP'
     );

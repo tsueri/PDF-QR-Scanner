@@ -1,4 +1,5 @@
 import * as pdfjsLib from 'pdfjs-dist';
+import { decodeImageData, orderAndDedupeCodes } from './decode.js';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   '../node_modules/pdfjs-dist/build/pdf.worker.mjs',
@@ -15,7 +16,7 @@ class WorkerPool {
     this.size = size;
 
     for (let i = 0; i < size; i++) {
-      const worker = new Worker(workerUrl);
+      const worker = new Worker(workerUrl, { type: 'module' });
       this.workers.push(worker);
       this.available.push(worker);
     }
@@ -41,7 +42,7 @@ class WorkerPool {
       const handleMessage = (e) => {
         worker.removeEventListener('message', handleMessage);
         worker.removeEventListener('error', handleError);
-        task.resolve(e.data.data);
+        task.resolve(e.data.codes);
         this.available.push(worker);
         this._flush();
       };
@@ -89,91 +90,20 @@ async function renderPage(page, scale) {
   return { canvas, ctx, width: canvas.width, height: canvas.height };
 }
 
-function scanFirstPass(ctx, width, height) {
-  const jsQR = globalThis.jsQR;
-  if (!jsQR) return null;
-
-  try {
-    const imageData = ctx.getImageData(0, 0, width, height);
-    const code = jsQR(imageData.data, imageData.width, imageData.height, {
-      inversionAttempts: 'attemptBoth',
-    });
-    if (code) return String(code.data);
-  } catch (err) {
-    console.warn('QR scan error:', err);
+async function scanRendered(pool, rendered) {
+  if (pool) {
+    const imageData = rendered.ctx.getImageData(0, 0, rendered.width, rendered.height);
+    return (await pool.scan(imageData)) || [];
   }
-  return null;
-}
-
-function mainThreadRotationSweep(ctx, width, height) {
-  const jsQR = globalThis.jsQR;
-  if (!jsQR) return null;
-
-  try {
-    const imageData = ctx.getImageData(0, 0, width, height);
-
-    for (let dir = 0; dir < 2; dir++) {
-      for (let angle = 5; angle <= 45; angle += 5) {
-        const sign = dir === 0 ? 1 : -1;
-        const rotated = rotateCanvas(ctx.canvas, sign * angle);
-        const rImgData = rotated.ctx.getImageData(0, 0, rotated.width, rotated.height);
-        const code = jsQR(rImgData.data, rImgData.width, rImgData.height, {
-          inversionAttempts: 'dontInvert',
-        });
-        if (code) return String(code.data);
-      }
-    }
-  } catch (err) {
-    console.warn('QR scan error:', err);
-  }
-
-  return null;
-}
-
-function rotateCanvas(sourceCanvas, angleDeg) {
-  const rad = (angleDeg * Math.PI) / 180;
-  const w = sourceCanvas.width;
-  const h = sourceCanvas.height;
-
-  const cos = Math.abs(Math.cos(rad));
-  const sin = Math.abs(Math.sin(rad));
-  const newW = Math.ceil(w * cos + h * sin);
-  const newH = Math.ceil(w * sin + h * cos);
-
-  const rotated = document.createElement('canvas');
-  rotated.width = newW;
-  rotated.height = newH;
-  const rCtx = rotated.getContext('2d', { willReadFrequently: true });
-  rCtx.imageSmoothingEnabled = false;
-
-  rCtx.translate(newW / 2, newH / 2);
-  rCtx.rotate(rad);
-  rCtx.drawImage(sourceCanvas, -w / 2, -h / 2);
-
-  return { canvas: rotated, ctx: rCtx, width: newW, height: newH };
+  return decodeImageData(
+    rendered.ctx.getImageData(0, 0, rendered.width, rendered.height)
+  );
 }
 
 // --- Singleton pool (created once, reused across scans) --------------------
 
 let _pool = null;
 let _poolPromise = null;
-
-async function _getWorkerUrl() {
-  const [jsqrResp, workerResp] = await Promise.all([
-    fetch(new URL('../node_modules/jsqr/dist/jsQR.js', import.meta.url)),
-    fetch(new URL('./scan.worker.js', import.meta.url)),
-  ]);
-
-  const [jsqrSrc, workerSrc] = await Promise.all([
-    jsqrResp.text(),
-    workerResp.text(),
-  ]);
-
-  const combined = jsqrSrc + '\n' + workerSrc;
-  return URL.createObjectURL(
-    new Blob([combined], { type: 'application/javascript' })
-  );
-}
 
 async function _getPool() {
   if (_pool) return _pool;
@@ -185,7 +115,7 @@ async function _getPool() {
     const poolSize = Math.max(1, cores - 1);
 
     if (supportsOffscreen && poolSize > 1) {
-      const workerUrl = await _getWorkerUrl();
+      const workerUrl = new URL('./scan.worker.js', import.meta.url);
       _pool = new WorkerPool(workerUrl, poolSize);
       console.log('[QR-Scanner] Worker pool with', poolSize, 'threads');
     }
@@ -214,91 +144,37 @@ export async function scanPDF(pdfDoc, options = {}) {
 
   let completed = 0;
 
-  function markComplete(pageNum, data) {
-    results.push({ page: pageNum, data });
+  function markComplete(codes) {
+    results.push(...codes);
     completed++;
     onProgress?.(completed, total);
   }
 
-  // ---- Phase 1: render all pages at default scale, fast first-pass scan ----
-  const pending = [];
+  async function processPage(entry) {
+    const codes = await scanRendered(pool, entry.rendered);
+    markComplete(orderAndDedupeCodes(entry.pageNum, codes));
+  }
+
+  let batch = [];
+
+  async function flushBatch() {
+    if (batch.length === 0) return;
+    const entries = batch;
+    batch = [];
+    await Promise.all(entries.map(processPage));
+  }
 
   for (let pageNum = 1; pageNum <= total; pageNum++) {
     const page = await pdfDoc.getPage(pageNum);
     const rendered = await renderPage(page, scale);
+    batch.push({ page, pageNum, rendered });
 
-    const data = scanFirstPass(rendered.ctx, rendered.width, rendered.height);
-    if (data) {
-      markComplete(pageNum, data);
-      continue;
-    }
-
-    pending.push({ page, pageNum, canvas: rendered.canvas, scale });
-  }
-
-  // ---- Phase 2: rotation sweep in batches (parallel via worker pool) ----
-  if (pending.length > 0) {
-    const pendingPhase2 = [];
-
-    for (let i = 0; i < pending.length; i += BATCH_SIZE) {
-      const batch = pending.slice(i, i + BATCH_SIZE);
-      const batchTasks = batch.map((entry) => {
-        const ctx = entry.canvas.getContext('2d');
-        const imageData = ctx.getImageData(0, 0, entry.canvas.width, entry.canvas.height);
-
-        const scanPromise = pool
-          ? pool.scan(imageData)
-          : Promise.resolve(
-              mainThreadRotationSweep(ctx, entry.canvas.width, entry.canvas.height)
-            );
-
-        return scanPromise.then((data) => {
-          if (data) {
-            markComplete(entry.pageNum, data);
-          } else {
-            pendingPhase2.push(entry);
-          }
-        });
-      });
-
-      await Promise.all(batchTasks);
-    }
-
-    // ---- Phase 3: retry at double scale ----
-    for (let i = 0; i < pendingPhase2.length; i += BATCH_SIZE) {
-      const batch = pendingPhase2.slice(i, i + BATCH_SIZE);
-      const batchTasks = batch.map(async (entry) => {
-        const retryScale = entry.scale * 2;
-        console.log(
-          `[QR-Scanner] No QR found at scale ${entry.scale} — retrying at ${retryScale}x`
-        );
-
-        const rendered = await renderPage(entry.page, retryScale);
-
-        const data = scanFirstPass(rendered.ctx, rendered.width, rendered.height);
-        if (data) {
-          markComplete(entry.pageNum, data);
-          return;
-        }
-
-        const ctx = rendered.ctx;
-        const imageData = ctx.getImageData(0, 0, rendered.width, rendered.height);
-
-        const retryData = pool
-          ? await pool.scan(imageData)
-          : mainThreadRotationSweep(ctx, rendered.width, rendered.height);
-
-        if (retryData) {
-          markComplete(entry.pageNum, retryData);
-        } else {
-          completed++;
-          onProgress?.(completed, total);
-        }
-      });
-
-      await Promise.all(batchTasks);
+    if (batch.length >= BATCH_SIZE) {
+      await flushBatch();
     }
   }
+
+  await flushBatch();
 
   results.sort((a, b) => a.page - b.page);
   return results;

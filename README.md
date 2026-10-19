@@ -29,12 +29,9 @@ Getting started with PDF QR Scanner is incredibly simple:
 
 - **Client-side processing**: PDF rendering and QR decoding happen entirely in your browser. No data is uploaded anywhere.
 - **Multi-page PDF support**: Scans every page of the document.
-- **CSV output**: Results include page number and decoded QR data.
+- **Every QR code on every page**: Finds all QR codes on a page, not just the first one.
+- **CSV output**: One row per code, with the page number and decoded QR data.
 - **Zero build step**: Plain ES modules served directly — no bundler required.
-
-## Limitation
-
-- The App scans only one QR Code per page.
 
 ## Usage
 

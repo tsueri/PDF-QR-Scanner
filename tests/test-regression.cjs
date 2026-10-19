@@ -1,12 +1,24 @@
-// Regression test: verify tilted QR code detection via rotation sweep.
-// Tests scanForQRCode logic against synthetically tilted QR codes at various angles.
-// Run: node test-regression.js
+// Regression tests for the QR decoder: rotation tolerance, multi-code pages,
+// reading order and deduplication.
+// Run: node tests/test-regression.cjs
 
 const { createCanvas } = require('canvas');
 const QRCode = require('qrcode');
-const jsQR = require('jsqr');
 
-const TEST_DATA = 'PDF-QR-Scanner-tilt-test';
+const TILT_DATA = 'PDF-QR-Scanner-tilt-test';
+
+let passed = 0;
+let failed = 0;
+
+function assert(condition, message) {
+  if (condition) {
+    passed++;
+    console.log('PASS:', message);
+  } else {
+    failed++;
+    console.log('FAIL:', message);
+  }
+}
 
 function rotateCanvas(sourceCanvas, angleDeg) {
   const rad = (angleDeg * Math.PI) / 180;
@@ -29,59 +41,80 @@ function rotateCanvas(sourceCanvas, angleDeg) {
   return { canvas: rotated, ctx: rCtx, width: newW, height: newH };
 }
 
-function scanForQRCode(context, width, height) {
-  const imageData = context.getImageData(0, 0, width, height);
-  let code = jsQR(imageData.data, imageData.width, imageData.height, {
-    inversionAttempts: 'dontInvert',
-  });
-  if (code) return code.data;
-
-  for (let dir = 0; dir < 2; dir++) {
-    for (let angle = 5; angle <= 45; angle += 5) {
-      const sign = dir === 0 ? 1 : -1;
-      const rotated = rotateCanvas(context.canvas, sign * angle);
-      const rImgData = rotated.ctx.getImageData(0, 0, rotated.width, rotated.height);
-      code = jsQR(rImgData.data, rImgData.width, rImgData.height, {
-        inversionAttempts: 'dontInvert',
-      });
-      if (code) return code.data;
-    }
-  }
-
-  return null;
+async function canvasFor(data, size) {
+  const canvas = createCanvas(size, size);
+  await QRCode.toCanvas(canvas, data, { width: size, margin: 1 });
+  return canvas;
 }
 
-const results = [];
+async function main() {
+  const { decodeImageData, orderAndDedupeCodes } = await import('../src/decode.js');
 
-async function run() {
-  const qrCanvas = createCanvas(300, 300);
-  await QRCode.toCanvas(qrCanvas, TEST_DATA, { width: 300, margin: 1 });
+  // --- single QR, upright and tilted -------------------------------------
+  const qrCanvas = await canvasFor(TILT_DATA, 300);
 
-  // Test 1: Upright QR code (0°) — should still work
   {
-    const result = scanForQRCode(qrCanvas.getContext('2d'), qrCanvas.width, qrCanvas.height);
-    const pass = result === TEST_DATA;
-    results.push({ name: 'Upright (0°) QR code', pass });
-    console.log(`${pass ? 'PASS' : 'FAIL'}: Upright (0°) QR code`);
+    const codes = await decodeImageData(qrCanvas.getContext('2d').getImageData(0, 0, 300, 300));
+    assert(codes.map(function (c) { return c.data; }).join('|') === TILT_DATA, 'Upright (0°) QR code');
   }
 
-  // Test 2-9: Tilted QR codes at 5°, 10°, 15°, 20°, 25°, 30°, 35°, 40°
-  const tiltAngles = [5, 10, 15, 20, 25, 30, 35, 40];
-  for (const tilt of tiltAngles) {
+  for (const tilt of [5, 10, 15, 20, 25, 30, 35, 40]) {
     const tilted = rotateCanvas(qrCanvas, tilt);
-    const result = scanForQRCode(tilted.ctx, tilted.width, tilted.height);
-    const pass = result === TEST_DATA;
-    results.push({ name: `Tilted ${tilt}° QR code`, pass });
-    console.log(`${pass ? 'PASS' : 'FAIL'}: Tilted ${tilt}° QR code`);
+    const codes = await decodeImageData(tilted.ctx.getImageData(0, 0, tilted.width, tilted.height));
+    assert(codes.map(function (c) { return c.data; }).join('|') === TILT_DATA, `Tilted ${tilt}° QR code`);
   }
 
-  const allPass = results.every((r) => r.pass);
-  console.log(`\n${results.filter((r) => r.pass).length}/${results.length} tests passed`);
-  console.log(allPass ? 'ALL TESTS PASSED' : 'SOME TESTS FAILED');
-  process.exit(allPass ? 0 : 1);
+  // --- several QR codes on one page --------------------------------------
+  {
+    const page = createCanvas(900, 640);
+    const ctx = page.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, page.width, page.height);
+
+    const topLeft = await canvasFor('top-left', 220);
+    const topRight = await canvasFor('top-right', 180);
+    const bottom = await canvasFor('bottom', 220);
+
+    ctx.drawImage(topLeft, 30, 30);
+    ctx.drawImage(topRight, 640, 40);
+    ctx.drawImage(bottom, 330, 360);
+
+    const codes = await decodeImageData(ctx.getImageData(0, 0, page.width, page.height));
+    const ordered = orderAndDedupeCodes(7, codes);
+
+    assert(ordered.length === 3, 'Finds every QR code on a page (3/3)');
+
+    const data = ordered.map(function (c) { return c.data; });
+    assert(
+      data[0] === 'top-left' && data[1] === 'top-right' && data[2] === 'bottom',
+      'Orders codes top-to-bottom, left-to-right'
+    );
+    assert(
+      ordered.every(function (c) {
+        return c.page === 7 && c.position && typeof c.position.topLeft.x === 'number';
+      }),
+      'Per-code records carry page and position'
+    );
+  }
+
+  // --- exact duplicates within a page are deduped ------------------------
+  {
+    const codes = [
+      { data: 'dup', position: { topLeft: { x: 10, y: 200 } } },
+      { data: 'dup', position: { topLeft: { x: 10, y: 10 } } },
+      { data: 'other', position: { topLeft: { x: 10, y: 100 } } },
+    ];
+    const ordered = orderAndDedupeCodes(2, codes);
+    assert(ordered.length === 2, 'Exact duplicates within a page are deduped');
+    assert(ordered[0].data === 'other' && ordered[1].data === 'dup', 'Deduped codes keep reading order');
+  }
+
+  console.log('\n' + passed + ' passed, ' + failed + ' failed');
+  if (failed > 0) process.exit(1);
+  console.log('ALL TESTS PASSED');
 }
 
-run().catch((e) => {
+main().catch(function (e) {
   console.error('Test error:', e);
   process.exit(2);
 });

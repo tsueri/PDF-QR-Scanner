@@ -16,8 +16,10 @@ mkdirSync(vendorDir, { recursive: true });
 const vendorFiles = [
   ['node_modules/pdfjs-dist/build/pdf.min.mjs', 'vendor/pdf.mjs'],
   ['node_modules/pdfjs-dist/build/pdf.worker.min.mjs', 'vendor/pdf.worker.mjs'],
-  ['node_modules/jsqr/dist/jsQR.js', 'vendor/jsQR.js'],
   ['node_modules/jszip/dist/jszip.min.js', 'vendor/jszip.min.js'],
+  ['node_modules/zxing-wasm/dist/es/share.js', 'vendor/zxing/es/share.js'],
+  ['node_modules/zxing-wasm/dist/es/reader/index.js', 'vendor/zxing/es/reader/index.js'],
+  ['node_modules/zxing-wasm/dist/reader/zxing_reader.wasm', 'vendor/zxing/reader/zxing_reader.wasm'],
 ];
 
 for (const [src, dst] of vendorFiles) {
@@ -53,21 +55,21 @@ scanJs = scanJs.replace(
   "'../node_modules/pdfjs-dist/build/pdf.worker.mjs'",
   "'./vendor/pdf.worker.mjs'"
 );
-scanJs = scanJs.replace(
-  "'../node_modules/jsqr/dist/jsQR.js'",
-  "'./vendor/jsQR.js'"
-);
 writeFileSync(resolve(releaseDir, 'scan.js'), scanJs);
+
+// decode.js with vendored zxing paths (preserves the dist/es + dist/reader layout)
+let decodeJs = readFileSync(resolve(root, 'src/decode.js'), 'utf8');
+decodeJs = decodeJs.replaceAll(
+  '../node_modules/zxing-wasm/dist/',
+  './vendor/zxing/'
+);
+writeFileSync(resolve(releaseDir, 'decode.js'), decodeJs);
 
 // index.html with patched paths
 let indexHtml = readFileSync(resolve(root, 'index.html'), 'utf8');
 indexHtml = indexHtml.replace(
   '"./node_modules/pdfjs-dist/build/pdf.mjs"',
   '"./vendor/pdf.mjs"'
-);
-indexHtml = indexHtml.replace(
-  '"node_modules/jsqr/dist/jsQR.js"',
-  '"vendor/jsQR.js"'
 );
 indexHtml = indexHtml.replace(
   '"node_modules/jszip/dist/jszip.min.js"',

@@ -4,26 +4,28 @@
 
 - `index.html` — single-page UI: file input, scan button, progress bar. Uses Bootstrap 5 for styling.
 - `src/app.js` — UI orchestrator: file selection, calling scanPDF, progress updates, CSV download.
-- `src/scan.js` — deep PDF scanning module. Exports `scanPDF(pdfDoc, options?) → Promise<ScanResult[]>`. Renders PDF pages as offscreen canvases via pdfjs-dist, decodes QR codes via jsQR.
+- `src/scan.js` — deep PDF scanning module. Exports `scanPDF(pdfDoc, options?) → Promise<ScanResult[]>`. Renders PDF pages as offscreen canvases via pdfjs-dist and feeds them to a worker pool.
+- `src/decode.js` — QR decoding seam. Wraps zxing-wasm's `readBarcodes` (QR-only, self-hosted wasm), orders codes and dedupes exact duplicates per page.
 - `src/scss/custom.css` — compiled Bootstrap 5 CSS.
-- Libraries: pdfjs-dist (v4.x, PDF rendering), jsQR (v1.x, QR decoding). Loaded via import map and script tag, served from `node_modules/`.
+- Libraries: pdfjs-dist (v4.x, PDF rendering), zxing-wasm (v3.x, multi-QR decoding). Served from `node_modules/`; the wasm is self-hosted (no CDN).
 
-Single-page, zero-build, ESM module graph. `src/app.js` is the entry point — it imports `scanPDF` from `src/scan.js`, both import `pdfjs-dist` via an `<script type="importmap">`. jsQR is loaded as a regular `<script>` that sets `globalThis.jsQR`. No framework, no bundler.
+Single-page, zero-build, ESM module graph. `src/app.js` is the entry point — it imports `scanPDF` from `src/scan.js`; `scan.js` and the module worker import the decoder from `src/decode.js`. pdfjs-dist is resolved via an `<script type="importmap">`. No framework, no bundler.
 
 Scan pipeline:
 1. User selects PDF → `pdfjsLib.getDocument()` parses it in a web worker.
-2. `scanPDF` iterates pages, renders each to an offscreen canvas, runs `jsQR` on pixel data.
-3. Results (`{ page, data }[]`) returned to caller.
+2. `scanPDF` iterates pages, renders each to an offscreen canvas, and decodes it through the worker pool.
+3. Every code on the page is returned as `{ page, data, position }`, sorted top-to-bottom / left-to-right with exact per-page duplicates removed.
 4. Caller formats as CSV and triggers browser download.
 
 ## Docs
 
 - [index.html](index.html): Single-page UI — file input, scan button, progress bar
 - [src/app.js](src/app.js): UI orchestrator — file selection, scanning, progress updates, CSV download
-- [src/scan.js](src/scan.js): Deep PDF scanning module with pdfjs-dist rendering and jsQR decoding
+- [src/scan.js](src/scan.js): Deep PDF scanning module with pdfjs-dist rendering and a worker pool
+- [src/decode.js](src/decode.js): QR-only zxing-wasm decoder, reading-order sort and per-page dedup
 
 ## Optional
 
 - [GitHub Repository](https://github.com/tsueri/PDF-QR-Scanner): Full source code, issue tracker, and deployment info
 - [pdfjs-dist](https://mozilla.github.io/pdf.js/): PDF.js library documentation
-- [jsQR](https://github.com/cozmo/jsQR): jsQR library documentation
+- [zxing-wasm](https://github.com/Sec-ant/zxing-wasm): zxing-cpp WebAssembly reader documentation
