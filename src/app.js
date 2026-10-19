@@ -1,7 +1,7 @@
 import * as pdfjsLib from 'pdfjs-dist';
-import { scanPDF } from './scan.js';
-import { fileResultsToCSV } from './csv.js';
-import { buildZip } from './zip.js';
+import { scanPDF } from './scan.js?v=__ASSET_VERSION__';
+import { fileResultsToCSV } from './csv.js?v=__ASSET_VERSION__';
+import { buildZip } from './zip.js?v=__ASSET_VERSION__';
 
 document.addEventListener('DOMContentLoaded', function() {
     const pdfInput = document.getElementById('pdfInput');

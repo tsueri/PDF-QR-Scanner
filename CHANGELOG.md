@@ -4,6 +4,22 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-10-19
+
+### Added
+
+- Release assets are cache-busted with `?v=<version>`: entry script, ES modules,
+  module worker, pdf.js worker, zxing wasm, stylesheet and import map.
+- `version.json` is shipped with the release, and the page checks it with
+  `cache: 'no-store'`. A cached HTML page that sees a newer deployment reloads once
+  with a cache-busting query, so returning visitors pick up the new version.
+
+### Changed
+
+- Asset URLs and `version.json` are stamped at release-build time from `package.json`,
+  so a version bump automatically propagates to every asset.
+- A reload guard prevents loops on hosts that cache HTML regardless of query strings.
+
 ## [1.3.1] - 2026-10-19
 
 ### Fixed
@@ -42,5 +58,6 @@ All notable changes to this project are documented here. The format follows
 - The 18-attempt rotation sweep and the 2× scale retry.
 - The README “one QR code per page” limitation.
 
+[1.4.0]: https://github.com/tsueri/PDF-QR-Scanner/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/tsueri/PDF-QR-Scanner/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/tsueri/PDF-QR-Scanner/compare/v1.2.0...v1.3.0

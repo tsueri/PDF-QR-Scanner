@@ -1,8 +1,8 @@
 import * as pdfjsLib from 'pdfjs-dist';
-import { decodeImageData, orderAndDedupeCodes } from './decode.js';
+import { decodeImageData, orderAndDedupeCodes } from './decode.js?v=__ASSET_VERSION__';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  '../node_modules/pdfjs-dist/build/pdf.worker.mjs',
+  '../node_modules/pdfjs-dist/build/pdf.worker.mjs?v=__ASSET_VERSION__',
   import.meta.url
 ).toString();
 
@@ -115,7 +115,7 @@ async function _getPool() {
     const poolSize = Math.max(1, cores - 1);
 
     if (supportsOffscreen && poolSize > 1) {
-      const workerUrl = new URL('./scan.worker.js', import.meta.url);
+      const workerUrl = new URL('./scan.worker.js?v=__ASSET_VERSION__', import.meta.url);
       _pool = new WorkerPool(workerUrl, poolSize);
       console.log('[QR-Scanner] Worker pool with', poolSize, 'threads');
     }

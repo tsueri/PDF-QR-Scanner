@@ -1,16 +1,18 @@
 import {
   prepareZXingModule,
   readBarcodes,
-} from '../node_modules/zxing-wasm/dist/es/reader/index.js';
+} from '../node_modules/zxing-wasm/dist/es/reader/index.js?v=__ASSET_VERSION__';
 
 // Asset base. The release build rewrites this specifier and the wasm path
 // below to the vendored copies under ./vendor/.
 const ZXING_DIST = new URL('../node_modules/zxing-wasm/dist/', import.meta.url);
+const ASSET_VERSION = '__ASSET_VERSION__';
 
 function locateZXingAsset(path) {
   const url = new URL('reader/' + path, ZXING_DIST);
   // Emscripten reads the wasm with fs when running under Node (tests).
   if (url.protocol === 'file:') return decodeURIComponent(url.pathname);
+  url.searchParams.set('v', ASSET_VERSION);
   return url.href;
 }
 

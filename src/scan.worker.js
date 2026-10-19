@@ -2,7 +2,7 @@ import {
   decodeImageData,
   orderAndDedupeCodes,
   prewarmDecoder,
-} from './decode.js';
+} from './decode.js?v=__ASSET_VERSION__';
 
 prewarmDecoder();
 
