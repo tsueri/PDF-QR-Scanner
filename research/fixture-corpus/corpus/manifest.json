@@ -1,0 +1,1748 @@
+{
+  "name": "PDF-QR-Scanner universal-scanner fixture corpus",
+  "ticket": "https://github.com/tsueri/PDF-QR-Scanner/issues/19",
+  "reader": "zxing-wasm 3.1.6",
+  "decoderNotes": "Observed results use zxing-wasm reader defaults (tryHarder/tryRotate/tryInvert/tryDownscale on, returnErrors off). Raster loading mirrors the app pipeline: canvas -> ImageData; containers the canvas cannot load were converted with magick/ffmpeg before decoding.",
+  "entries": [
+    {
+      "id": "same-payload",
+      "dir": "qr-same-payload",
+      "kind": "raster",
+      "container": "PNG,JPEG,WebP,GIF,BMP,AVIF,SVG(+transparent PNG)",
+      "payload": "https://example.com/fixt/0001",
+      "symbology": "QRCode",
+      "expected": {
+        "defaultQR": 1,
+        "allFormats": 1
+      },
+      "notes": "Identical payload across 8 containers. qr-transparent.png decodes to 0 codes as raw RGBA; 1 code after alpha is flattened on white (#20 measured).",
+      "verified": {
+        "reader": "zxing-wasm 3.1.6",
+        "files": {
+          "qr-transparent.png": {
+            "modes": {
+              "rawAlphaKept": 0,
+              "flattenedOnWhite": 1
+            },
+            "pixels": "296x296"
+          },
+          "qr.avif": {
+            "modes": {
+              "defaultQR": 1,
+              "allFormats": 1
+            },
+            "pixels": "296x296"
+          },
+          "qr.bmp": {
+            "modes": {
+              "defaultQR": 1,
+              "allFormats": 1
+            },
+            "pixels": "296x296"
+          },
+          "qr.gif": {
+            "modes": {
+              "defaultQR": 1,
+              "allFormats": 1
+            },
+            "pixels": "296x296"
+          },
+          "qr.jpg": {
+            "modes": {
+              "defaultQR": 1,
+              "allFormats": 1
+            },
+            "pixels": "296x296"
+          },
+          "qr.png": {
+            "modes": {
+              "defaultQR": 1,
+              "allFormats": 1
+            },
+            "pixels": "296x296"
+          },
+          "qr.svg": {
+            "modes": {
+              "defaultQR": 1,
+              "allFormats": 1
+            },
+            "pixels": "37x37"
+          },
+          "qr.webp": {
+            "modes": {
+              "defaultQR": 1,
+              "allFormats": 1
+            },
+            "pixels": "296x296"
+          }
+        }
+      }
+    },
+    {
+      "id": "exif-orientation",
+      "dir": "orientation",
+      "kind": "raster",
+      "container": "JPEG",
+      "payload": "https://example.com/fixt/0001",
+      "symbology": "QRCode",
+      "width": 2000,
+      "height": 1500,
+      "expected": {
+        "defaultQR": 1,
+        "allFormats": 1
+      },
+      "notes": "Stored pixels are the upright scene rotated by metadata only: orientation-6 stored = upright rotated 90° CCW; orientation-8 stored = upright rotated 90° CW. createImageBitmap applies EXIF by default (#20); the stb Blob path ignores EXIF (harmless for 2D).",
+      "verified": {
+        "reader": "zxing-wasm 3.1.6",
+        "files": {
+          "exif-orientation-6.jpg": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "1500x2000",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/0001",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDE="
+              }
+            ]
+          },
+          "exif-orientation-8.jpg": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "1500x2000",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/0001",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDE="
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "large-12mp",
+      "dir": "large",
+      "kind": "raster",
+      "container": "JPEG",
+      "payload": "https://example.com/fixt/0001",
+      "symbology": "QRCode",
+      "width": 4032,
+      "height": 3024,
+      "expected": {
+        "defaultQR": 1,
+        "allFormats": 1
+      },
+      "notes": "12 MP photo, QR top-right (~518px). Fits the old 4096² iOS canvas cap.",
+      "verified": {
+        "reader": "zxing-wasm 3.1.6",
+        "files": {
+          "bomb-144mp.png": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "12000x12000",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/0001",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDE="
+              }
+            ]
+          },
+          "photo-12mp-qr-corner.jpg": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "4032x3024",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/0001",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDE="
+              }
+            ]
+          },
+          "photo-48mp-qr-corner.jpg": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "8000x6000",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/0001",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDE="
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "large-48mp",
+      "dir": "large",
+      "kind": "raster",
+      "container": "JPEG",
+      "payload": "https://example.com/fixt/0001",
+      "symbology": "QRCode",
+      "width": 8000,
+      "height": 6000,
+      "expected": {
+        "defaultQR": 1,
+        "allFormats": 1
+      },
+      "notes": "48 MP photo, QR top-right. Over the 4096² iOS canvas cap; fits 8192². Feeds the pixel-budget / oversize policy (fog: \"Pixel-budget values\").",
+      "verified": {
+        "reader": "zxing-wasm 3.1.6",
+        "files": {
+          "bomb-144mp.png": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "12000x12000",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/0001",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDE="
+              }
+            ]
+          },
+          "photo-12mp-qr-corner.jpg": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "4032x3024",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/0001",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDE="
+              }
+            ]
+          },
+          "photo-48mp-qr-corner.jpg": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "8000x6000",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/0001",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDE="
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "bomb-144mp",
+      "dir": "large",
+      "kind": "raster",
+      "container": "PNG",
+      "payload": "https://example.com/fixt/0001",
+      "symbology": "QRCode",
+      "width": 12000,
+      "height": 12000,
+      "expected": {
+        "defaultQR": 1,
+        "allFormats": 1
+      },
+      "notes": "144 MP \"decompression bomb\": 12000² is accepted by Chromium and Firefox (#20 measured; 20000² is too) and zxing still finds the corner QR via tryDownscale in Node — but it busts every device pixel budget and the iOS canvas caps. The oversize-rejection policy test case (fog: \"Pixel-budget values and oversize policy\").",
+      "verified": {
+        "reader": "zxing-wasm 3.1.6",
+        "files": {
+          "bomb-144mp.png": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "12000x12000",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/0001",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDE="
+              }
+            ]
+          },
+          "photo-12mp-qr-corner.jpg": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "4032x3024",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/0001",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDE="
+              }
+            ]
+          },
+          "photo-48mp-qr-corner.jpg": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "8000x6000",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/0001",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDE="
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "quality",
+      "dir": "quality",
+      "kind": "raster",
+      "container": "JPEG,PNG",
+      "payloads": [
+        {
+          "symbology": "QRCode",
+          "data": "https://example.com/fixt/0001"
+        },
+        {
+          "symbology": "QRCode",
+          "data": "OCCLUSION-TEST"
+        }
+      ],
+      "expected": {
+        "defaultQR": 1,
+        "allFormats": 1,
+        "note": "all four decode with zxing defaults on 3.1.6: low-contrast (26% luminance delta) still reads, skewed relies on tryDownscale, occluded has ~18% of the symbol covered in a centre band clear of the finder patterns, baked-rot90 relies on tryRotate"
+      },
+      "notes": "Low-contrast (26% luminance delta), ~25° skewed with shear, centre sticker occlusion over an EC-H symbol, and a QR whose pixels are rotated 90° with no EXIF. Borderline cases that document how far the default reader options go.",
+      "verified": {
+        "reader": "zxing-wasm 3.1.6",
+        "files": {
+          "qr-baked-rot90.png": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "222x222",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/0001",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDE="
+              }
+            ]
+          },
+          "qr-low-contrast.jpg": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "296x296",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/0001",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDE="
+              }
+            ]
+          },
+          "qr-occluded.png": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "264x264",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "OCCLUSION-TEST",
+                "bytesB64": "T0NDTFVTSU9OLVRFU1Q="
+              }
+            ]
+          },
+          "qr-skewed.png": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "520x520",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/0001",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDE="
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "symbologies",
+      "dir": "symbologies",
+      "kind": "raster",
+      "container": "PNG",
+      "expected": {
+        "note": "Read expectations recorded per file in \"samples\"; all generated by zxing-wasm 3.1.6 full writer and read-verified below."
+      },
+      "samples": [
+        {
+          "file": "ean13.png",
+          "payload": "4006381333931",
+          "expected": {
+            "allFormats": 1
+          }
+        },
+        {
+          "file": "code128.png",
+          "payload": "Code128-FIXTURE",
+          "expected": {
+            "allFormats": 1
+          }
+        },
+        {
+          "file": "datamatrix.png",
+          "payload": "DataMatrix-FIXTURE",
+          "expected": {
+            "defaultQR": 0,
+            "allFormats": 1
+          }
+        },
+        {
+          "file": "pdf417.png",
+          "payload": "PDF417-FIXTURE",
+          "expected": {
+            "defaultQR": 0,
+            "allFormats": 1
+          }
+        },
+        {
+          "file": "aztec.png",
+          "payload": "Aztec-FIXTURE",
+          "expected": {
+            "defaultQR": 0,
+            "allFormats": 1
+          }
+        },
+        {
+          "file": "upca.png",
+          "payload": "UPC-A 012345678905",
+          "expected": {
+            "allFormats": 1
+          },
+          "note": "UPC-A is reported as EAN13 \"0\" + text (13 digits) under broad selectors (#23 §2)."
+        },
+        {
+          "file": "itf14.png",
+          "payload": "12345678901231",
+          "expected": {
+            "allFormats": 1
+          },
+          "note": "ITF-14 is reported as format ITF, text unchanged."
+        },
+        {
+          "file": "ean13-addon5.png",
+          "payload": "4006381333931 + add-on 53",
+          "expected": {
+            "allFormats": 1,
+            "addonRead": 2
+          },
+          "note": "Add-on is only returned with eanAddOnSymbol:\"Read\" (default \"Ignore\" returns the main symbol only) — the unverified case from #23 §10."
+        },
+        {
+          "file": "gs1-code128.png",
+          "payload": "(01)12345678901231(17)261231(10)LOT42",
+          "expected": {
+            "allFormats": 1
+          },
+          "note": "contentType GS1, symbologyIdentifier ]C1, HRI renders AI in parentheses."
+        },
+        {
+          "file": "gs1-datamatrix.png",
+          "payload": "(01)12345678901231(17)261231(10)LOT42",
+          "expected": {
+            "defaultQR": 0,
+            "allFormats": 1
+          },
+          "note": "contentType GS1, symbologyIdentifier ]d2."
+        },
+        {
+          "file": "telepen-alpha.png",
+          "payload": "Hello Telepen",
+          "expected": {
+            "allFormats": 1
+          }
+        },
+        {
+          "file": "telepen-numeric.png",
+          "payload": "1234567890",
+          "expected": {
+            "allFormats": 1
+          },
+          "note": "KNOWN MISREAD under broad selectors: TelepenNumeric decodes as TelepenAlpha with garbage text; only narrow [\"TelepenNumeric\"] reads it right (#23 §2)."
+        },
+        {
+          "file": "qr-binary.png",
+          "payloadBase64": "QUL//oAAAQ==",
+          "expected": {
+            "defaultQR": 1,
+            "allFormats": 1
+          },
+          "note": "Non-UTF-8 binary QR (ECI 899 from the writer); text is HRI-escaped, bytes are exact."
+        },
+        {
+          "file": "qr-256bytes.png",
+          "payloadBase64": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w==",
+          "expected": {
+            "defaultQR": 1,
+            "allFormats": 1
+          },
+          "note": "All 256 byte values; contentType Binary."
+        },
+        {
+          "file": "qr-micro.png",
+          "payload": "MICRO-123",
+          "expected": {
+            "defaultQR": 1,
+            "allFormats": 1
+          },
+          "note": "MicroQRCode is inside the [\"QRCode\"] symbology root (#23 §3)."
+        },
+        {
+          "file": "qr-rmqr.png",
+          "payload": "rMQR-FIXTURE",
+          "expected": {
+            "defaultQR": 1,
+            "allFormats": 1
+          },
+          "note": "rMQRCode is inside the [\"QRCode\"] symbology root."
+        },
+        {
+          "file": "qr-inverted.png",
+          "payload": "https://example.com/fixt/inverted",
+          "expected": {
+            "defaultQR": 1,
+            "allFormats": 1
+          },
+          "note": "White-on-black; found with tryInvert (default true)."
+        }
+      ],
+      "verified": {
+        "reader": "zxing-wasm 3.1.6",
+        "samples": {
+          "ean13.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "EAN13",
+                "symbology": "EANUPC",
+                "contentType": "Text",
+                "symbologyIdentifier": "]E0",
+                "text": "4006381333931",
+                "bytesB64": "NDAwNjM4MTMzMzkzMQ=="
+              }
+            ]
+          },
+          "code128.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "Code128",
+                "symbology": "Code128",
+                "contentType": "Text",
+                "symbologyIdentifier": "]C0",
+                "text": "Code128-FIXTURE",
+                "bytesB64": "Q29kZTEyOC1GSVhUVVJF"
+              }
+            ]
+          },
+          "datamatrix.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "DataMatrix",
+                "symbology": "DataMatrix",
+                "contentType": "Text",
+                "symbologyIdentifier": "]d1",
+                "text": "DataMatrix-FIXTURE",
+                "bytesB64": "RGF0YU1hdHJpeC1GSVhUVVJF"
+              }
+            ]
+          },
+          "pdf417.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "PDF417",
+                "symbology": "PDF417",
+                "contentType": "Text",
+                "symbologyIdentifier": "]L2",
+                "text": "PDF417-FIXTURE",
+                "bytesB64": "UERGNDE3LUZJWFRVUkU="
+              }
+            ]
+          },
+          "aztec.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "Aztec",
+                "symbology": "Aztec",
+                "contentType": "Text",
+                "symbologyIdentifier": "]z0",
+                "text": "Aztec-FIXTURE",
+                "bytesB64": "QXp0ZWMtRklYVFVSRQ=="
+              }
+            ]
+          },
+          "upca.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "EAN13",
+                "symbology": "EANUPC",
+                "contentType": "Text",
+                "symbologyIdentifier": "]E0",
+                "text": "0012345678905",
+                "bytesB64": "MDAxMjM0NTY3ODkwNQ=="
+              }
+            ]
+          },
+          "itf14.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "ITF",
+                "symbology": "ITF",
+                "contentType": "Text",
+                "symbologyIdentifier": "]I1",
+                "text": "12345678901231",
+                "bytesB64": "MTIzNDU2Nzg5MDEyMzE="
+              }
+            ]
+          },
+          "ean13-addon5.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "EAN13",
+                "symbology": "EANUPC",
+                "contentType": "Text",
+                "symbologyIdentifier": "]E0",
+                "text": "4006381333931",
+                "bytesB64": "NDAwNjM4MTMzMzkzMQ=="
+              }
+            ],
+            "addonRead": 2
+          },
+          "gs1-code128.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "Code128",
+                "symbology": "Code128",
+                "contentType": "GS1",
+                "symbologyIdentifier": "]C1",
+                "text": "(01)12345678901231(17)261231(10)LOT42",
+                "bytesB64": "MDExMjM0NTY3ODkwMTIzMTE3MjYxMjMxMTBMT1Q0Mg=="
+              }
+            ]
+          },
+          "gs1-datamatrix.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "DataMatrix",
+                "symbology": "DataMatrix",
+                "contentType": "GS1",
+                "symbologyIdentifier": "]d2",
+                "text": "(01)12345678901231(17)261231(10)LOT42",
+                "bytesB64": "MDExMjM0NTY3ODkwMTIzMTE3MjYxMjMxMTBMT1Q0Mg=="
+              }
+            ]
+          },
+          "telepen-alpha.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "TelepenAlpha",
+                "symbology": "Telepen",
+                "contentType": "Text",
+                "symbologyIdentifier": "]B0",
+                "text": "Hello Telepen",
+                "bytesB64": "SGVsbG8gVGVsZXBlbg=="
+              }
+            ]
+          },
+          "telepen-numeric.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "TelepenAlpha",
+                "symbology": "Telepen",
+                "contentType": "Text",
+                "symbologyIdentifier": "]B0",
+                "text": "'=Siu",
+                "bytesB64": "Jz1TaXU="
+              }
+            ],
+            "narrow": [
+              {
+                "format": "TelepenNumeric",
+                "symbology": "Telepen",
+                "contentType": "Text",
+                "symbologyIdentifier": "]B1",
+                "text": "1234567890",
+                "bytesB64": "MTIzNDU2Nzg5MA=="
+              }
+            ]
+          },
+          "qr-binary.png": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Binary",
+                "symbologyIdentifier": "]Q1",
+                "text": "ABÿþ<U+80><NUL><SOH>",
+                "bytesB64": "QUL//oAAAQ=="
+              }
+            ]
+          },
+          "qr-256bytes.png": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Binary",
+                "symbologyIdentifier": "]Q1",
+                "text": "<NUL><SOH><STX><ETX><EOT><ENQ><ACK><BEL><BS><HT><LF><VT><FF><CR><SO><SI><DLE><DC1><DC2><DC3><DC4><NAK><SYN><ETB><CAN>...",
+                "bytesB64": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w=="
+              }
+            ]
+          },
+          "qr-micro.png": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "MicroQRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "MICRO-123",
+                "bytesB64": "TUlDUk8tMTIz"
+              }
+            ]
+          },
+          "qr-rmqr.png": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "RMQRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "rMQR-FIXTURE",
+                "bytesB64": "ck1RUi1GSVhUVVJF"
+              }
+            ]
+          },
+          "qr-inverted.png": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/inverted",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0L2ludmVydGVk"
+              }
+            ]
+          }
+        },
+        "mixed": {
+          "observed": [
+            {
+              "format": "QRCode",
+              "symbology": "QRCode",
+              "contentType": "Text",
+              "symbologyIdentifier": "]Q1",
+              "text": "https://example.com/fixt/0001",
+              "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDE="
+            },
+            {
+              "format": "DataMatrix",
+              "symbology": "DataMatrix",
+              "contentType": "Text",
+              "symbologyIdentifier": "]d1",
+              "text": "DataMatrix-FIXTURE",
+              "bytesB64": "RGF0YU1hdHJpeC1GSVhUVVJF"
+            },
+            {
+              "format": "Code128",
+              "symbology": "Code128",
+              "contentType": "Text",
+              "symbologyIdentifier": "]C0",
+              "text": "Code128-FIXTURE",
+              "bytesB64": "Q29kZTEyOC1GSVhUVVJF"
+            },
+            {
+              "format": "EAN13",
+              "symbology": "EANUPC",
+              "contentType": "Text",
+              "symbologyIdentifier": "]E0",
+              "text": "5901234123457",
+              "bytesB64": "NTkwMTIzNDEyMzQ1Nw=="
+            },
+            {
+              "format": "Aztec",
+              "symbology": "Aztec",
+              "contentType": "Text",
+              "symbologyIdentifier": "]z0",
+              "text": "Aztec-FIXTURE",
+              "bytesB64": "QXp0ZWMtRklYVFVSRQ=="
+            },
+            {
+              "format": "PDF417",
+              "symbology": "PDF417",
+              "contentType": "Text",
+              "symbologyIdentifier": "]L2",
+              "text": "PDF417-FIXTURE",
+              "bytesB64": "UERGNDE3LUZJWFRVUkU="
+            },
+            {
+              "format": "EAN13",
+              "symbology": "EANUPC",
+              "contentType": "Text",
+              "symbologyIdentifier": "]E0",
+              "text": "0012345678905",
+              "bytesB64": "MDAxMjM0NTY3ODkwNQ=="
+            },
+            {
+              "format": "ITF",
+              "symbology": "ITF",
+              "contentType": "Text",
+              "symbologyIdentifier": "]I1",
+              "text": "12345678901231",
+              "bytesB64": "MTIzNDU2Nzg5MDEyMzE="
+            }
+          ],
+          "defaultQR": 1
+        }
+      }
+    },
+    {
+      "id": "mixed-symbologies",
+      "dir": "symbologies",
+      "kind": "raster",
+      "container": "PNG",
+      "expected": {
+        "defaultQR": 1,
+        "allFormats": 8
+      },
+      "payloads": [
+        "https://example.com/fixt/0001",
+        "DataMatrix-FIXTURE",
+        "Code128-FIXTURE",
+        "5901234123457",
+        "PDF417-FIXTURE",
+        "Aztec-FIXTURE",
+        "UPC-A as EAN13: 0012345678905",
+        "12345678901231"
+      ],
+      "notes": "Eight symbols in one image: QR, DataMatrix, Code128, EAN-13, PDF417, Aztec, UPC-A (reads as EAN13), ITF-14 (reads as ITF).",
+      "verified": {
+        "reader": "zxing-wasm 3.1.6",
+        "files": {
+          "aztec.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "pixels": "212x212",
+            "observed": []
+          },
+          "code128.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "pixels": "940x260",
+            "observed": []
+          },
+          "datamatrix.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "pixels": "220x220",
+            "observed": []
+          },
+          "ean13-addon5.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "pixels": "612x280",
+            "observed": []
+          },
+          "ean13.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "pixels": "512x280",
+            "observed": []
+          },
+          "gs1-code128.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "pixels": "1160x260",
+            "observed": []
+          },
+          "gs1-datamatrix.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "pixels": "220x220",
+            "observed": []
+          },
+          "itf14.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "pixels": "720x300",
+            "observed": []
+          },
+          "mixed-symbologies.png": {
+            "defaultQR": 1,
+            "allFormats": 8,
+            "pixels": "1920x1280",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/0001",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDE="
+              }
+            ]
+          },
+          "pdf417.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "pixels": "488x184",
+            "observed": []
+          },
+          "qr-256bytes.png": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "644x644",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Binary",
+                "symbologyIdentifier": "]Q1",
+                "text": "<NUL><SOH><STX><ETX><EOT><ENQ><ACK><BEL><BS><HT><LF><VT><FF><CR><SO><SI><DLE><DC1><DC2><DC3><DC4><NAK><SYN><ETB><CAN>...",
+                "bytesB64": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w=="
+              }
+            ]
+          },
+          "qr-binary.png": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "292x292",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Binary",
+                "symbologyIdentifier": "]Q1",
+                "text": "ABÿþ<U+80><NUL><SOH>",
+                "bytesB64": "QUL//oAAAQ=="
+              }
+            ]
+          },
+          "qr-inverted.png": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "356x356",
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/inverted",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0L2ludmVydGVk"
+              }
+            ]
+          },
+          "qr-micro.png": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "212x212",
+            "observed": [
+              {
+                "format": "MicroQRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "MICRO-123",
+                "bytesB64": "TUlDUk8tMTIz"
+              }
+            ]
+          },
+          "qr-rmqr.png": {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "pixels": "308x196",
+            "observed": [
+              {
+                "format": "RMQRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "rMQR-FIXTURE",
+                "bytesB64": "ck1RUi1GSVhUVVJF"
+              }
+            ]
+          },
+          "telepen-alpha.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "pixels": "1164x260",
+            "observed": []
+          },
+          "telepen-numeric.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "pixels": "652x260",
+            "observed": []
+          },
+          "upca.png": {
+            "defaultQR": 0,
+            "allFormats": 1,
+            "pixels": "512x280",
+            "observed": []
+          }
+        }
+      }
+    },
+    {
+      "id": "customer-card-dm",
+      "dir": "cards",
+      "kind": "pdf",
+      "file": "customer-card-datamatrix.pdf",
+      "expected": {
+        "defaultQR": 1,
+        "allFormats": 5
+      },
+      "payloads": [
+        "https://example.com/customer/0042?token=abc123",
+        "MARK-A1",
+        "MARK-B2"
+      ],
+      "notes": "Real-style customer card: QR (customer URL) + 4 corner DataMatrix marks (2 distinct payloads, each twice). Default [\"QRCode\"] must return only the QR; all formats additionally return 4 DataMatrix reads (#23 §5).",
+      "verified": {
+        "reader": "zxing-wasm 3.1.6",
+        "defaultQR": 1,
+        "allFormats": 5,
+        "observed": [
+          {
+            "format": "DataMatrix",
+            "symbology": "DataMatrix",
+            "contentType": "Text",
+            "symbologyIdentifier": "]d1",
+            "text": "MARK-A1",
+            "bytesB64": "TUFSSy1BMQ=="
+          },
+          {
+            "format": "DataMatrix",
+            "symbology": "DataMatrix",
+            "contentType": "Text",
+            "symbologyIdentifier": "]d1",
+            "text": "MARK-B2",
+            "bytesB64": "TUFSSy1CMg=="
+          },
+          {
+            "format": "QRCode",
+            "symbology": "QRCode",
+            "contentType": "Text",
+            "symbologyIdentifier": "]Q1",
+            "text": "https://example.com/customer/0042?token=abc123",
+            "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9jdXN0b21lci8wMDQyP3Rva2VuPWFiYzEyMw=="
+          },
+          {
+            "format": "DataMatrix",
+            "symbology": "DataMatrix",
+            "contentType": "Text",
+            "symbologyIdentifier": "]d1",
+            "text": "MARK-A1",
+            "bytesB64": "TUFSSy1BMQ=="
+          },
+          {
+            "format": "DataMatrix",
+            "symbology": "DataMatrix",
+            "contentType": "Text",
+            "symbologyIdentifier": "]d1",
+            "text": "MARK-B2",
+            "bytesB64": "TUFSSy1CMg=="
+          }
+        ]
+      }
+    },
+    {
+      "id": "customer-card-1d",
+      "dir": "cards",
+      "kind": "pdf",
+      "file": "customer-card-1d.pdf",
+      "expected": {
+        "defaultQR": 1,
+        "allFormats": 6
+      },
+      "payloads": [
+        "https://example.com/customer/0042?token=abc123",
+        "MARK-A1",
+        "MARK-B2",
+        "CUST-000042"
+      ],
+      "notes": "Same card plus a Code128 strip (customer number, HRI) — the \"1D-strip card\" from #23 §10.",
+      "verified": {
+        "reader": "zxing-wasm 3.1.6",
+        "defaultQR": 1,
+        "allFormats": 6,
+        "observed": [
+          {
+            "format": "DataMatrix",
+            "symbology": "DataMatrix",
+            "contentType": "Text",
+            "symbologyIdentifier": "]d1",
+            "text": "MARK-A1",
+            "bytesB64": "TUFSSy1BMQ=="
+          },
+          {
+            "format": "DataMatrix",
+            "symbology": "DataMatrix",
+            "contentType": "Text",
+            "symbologyIdentifier": "]d1",
+            "text": "MARK-B2",
+            "bytesB64": "TUFSSy1CMg=="
+          },
+          {
+            "format": "QRCode",
+            "symbology": "QRCode",
+            "contentType": "Text",
+            "symbologyIdentifier": "]Q1",
+            "text": "https://example.com/customer/0042?token=abc123",
+            "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9jdXN0b21lci8wMDQyP3Rva2VuPWFiYzEyMw=="
+          },
+          {
+            "format": "Code128",
+            "symbology": "Code128",
+            "contentType": "Text",
+            "symbologyIdentifier": "]C0",
+            "text": "CUST-000042",
+            "bytesB64": "Q1VTVC0wMDAwNDI="
+          },
+          {
+            "format": "DataMatrix",
+            "symbology": "DataMatrix",
+            "contentType": "Text",
+            "symbologyIdentifier": "]d1",
+            "text": "MARK-A1",
+            "bytesB64": "TUFSSy1BMQ=="
+          },
+          {
+            "format": "DataMatrix",
+            "symbology": "DataMatrix",
+            "contentType": "Text",
+            "symbologyIdentifier": "]d1",
+            "text": "MARK-B2",
+            "bytesB64": "TUFSSy1CMg=="
+          }
+        ]
+      }
+    },
+    {
+      "id": "heic-12mp",
+      "dir": "heic-tiff",
+      "kind": "heic",
+      "file": "photo-12mp.heic",
+      "payload": "https://example.com/fixt/0001",
+      "symbology": "QRCode",
+      "width": 4032,
+      "height": 3024,
+      "expected": {
+        "defaultQR": 1,
+        "allFormats": 1
+      },
+      "notes": "Single-image HEIC (pillow-heif/x265, q85). Native decode: Safari 17+ only; otherwise lazy libheif-js fallback (#21). python: {\"pages\": 1, \"size\": [4032, 3024]}",
+      "verified": {
+        "reader": "zxing-wasm 3.1.6",
+        "defaultQR": 1,
+        "allFormats": 1,
+        "decodedBy": "libheif-js 1.23.x (the app fallback-tier decoder, #21)"
+      }
+    },
+    {
+      "id": "tiff-multipage-g4",
+      "dir": "heic-tiff",
+      "kind": "tiff",
+      "file": "multi-page-g4.tiff",
+      "payloads": [
+        "https://example.com/fixt/0001",
+        "https://example.com/fixt/0001",
+        "https://example.com/fixt/0002"
+      ],
+      "expected": {
+        "pages": 3,
+        "note": "Pages 1+2 carry the same payload A (dedupe/ordering case), page 3 carries B. Each IFD is one scan page (#21: utif2). 1-bit CCITT G4 — the realistic scanned document."
+      },
+      "notes": "CCITT G4, 1700×2200 1-bit, 3 pages. python: {\"pages\": 3}",
+      "verified": {
+        "reader": "zxing-wasm 3.1.6",
+        "ifdCount": 3,
+        "pages": [
+          {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/0001",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDE="
+              }
+            ]
+          },
+          {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/0001",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDE="
+              }
+            ]
+          },
+          {
+            "defaultQR": 1,
+            "allFormats": 1,
+            "observed": [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/0002",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0LzAwMDI="
+              }
+            ]
+          }
+        ],
+        "decodedBy": "utif2 4.1.0 (the TIFF decoder picked by #21)"
+      }
+    },
+    {
+      "id": "tree-mixed",
+      "dir": "trees",
+      "kind": "tree+zip",
+      "files": [
+        "tree-mixed/cards/card-1.png",
+        "tree-mixed/cards/photo-1.png",
+        "tree-mixed/reports/card-1.png",
+        "tree-mixed/docs/scan.pdf",
+        "tree-mixed/invoices/inv-7.png"
+      ],
+      "payloads": {
+        "tree-mixed/cards/card-1.png": "https://example.com/fixt/tree-0001",
+        "tree-mixed/reports/card-1.png": "https://example.com/fixt/tree-0002",
+        "tree-mixed/docs/scan.pdf": [
+          "https://example.com/fixt/tree-0003",
+          "https://example.com/fixt/tree-0004"
+        ],
+        "tree-mixed/invoices/inv-7.png": "MARK-T5"
+      },
+      "expected": {
+        "note": "cards/photo-1.png is a no-code guard."
+      },
+      "notes": "Mixed folder tree, also zipped as tree-mixed.zip. card-1.png exists in two subfolders with different payloads (duplicate basename case); PDF inside the tree has two pages with distinct payloads.",
+      "verified": {
+        "reader": "zxing-wasm 3.1.6",
+        "zip": {
+          "entries": [
+            "tree-mixed/cards/card-1.png",
+            "tree-mixed/cards/photo-1.png",
+            "tree-mixed/docs/scan.pdf",
+            "tree-mixed/invoices/inv-7.png",
+            "tree-mixed/reports/card-1.png"
+          ]
+        },
+        "files": {
+          "tree-mixed/cards/card-1.png": [
+            {
+              "format": "QRCode",
+              "symbology": "QRCode",
+              "contentType": "Text",
+              "symbologyIdentifier": "]Q1",
+              "text": "https://example.com/fixt/tree-0001",
+              "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0L3RyZWUtMDAwMQ=="
+            }
+          ],
+          "tree-mixed/cards/photo-1.png": [],
+          "tree-mixed/reports/card-1.png": [
+            {
+              "format": "QRCode",
+              "symbology": "QRCode",
+              "contentType": "Text",
+              "symbologyIdentifier": "]Q1",
+              "text": "https://example.com/fixt/tree-0002",
+              "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0L3RyZWUtMDAwMg=="
+            }
+          ],
+          "tree-mixed/docs/scan.pdf": [
+            [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/tree-0003",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0L3RyZWUtMDAwMw=="
+              }
+            ],
+            [
+              {
+                "format": "QRCode",
+                "symbology": "QRCode",
+                "contentType": "Text",
+                "symbologyIdentifier": "]Q1",
+                "text": "https://example.com/fixt/tree-0004",
+                "bytesB64": "aHR0cHM6Ly9leGFtcGxlLmNvbS9maXh0L3RyZWUtMDAwNA=="
+              }
+            ]
+          ],
+          "tree-mixed/invoices/inv-7.png": [
+            {
+              "format": "DataMatrix",
+              "symbology": "DataMatrix",
+              "contentType": "Text",
+              "symbologyIdentifier": "]d1",
+              "text": "MARK-T5",
+              "bytesB64": "TUFSSy1UNQ=="
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "pdf-baseline",
+      "dir": "pdf",
+      "kind": "pdf",
+      "files": [
+        "example.pdf",
+        "two-page-qr.pdf"
+      ],
+      "payloads": {
+        "example.pdf": "https://github.com/tsueri/PDF-QR-Scanner",
+        "two-page-qr.pdf": [
+          "PDFQR-FIXTURE-PAGE-1",
+          "PDFQR-FIXTURE-PAGE-2"
+        ]
+      },
+      "notes": "example.pdf copied byte-identical from the repo (10°-tilted vector QR, payload https://github.com/tsueri/PDF-QR-Scanner) — the baseline for the existing page,qr-code CSV. two-page-qr.pdf has one distinct payload per page for CSV row checks.",
+      "verified": {
+        "reader": "zxing-wasm 3.1.6",
+        "files": {
+          "example.pdf": {
+            "pageCount": 1,
+            "pages": [
+              [
+                {
+                  "format": "QRCode",
+                  "symbology": "QRCode",
+                  "contentType": "Text",
+                  "symbologyIdentifier": "]Q1",
+                  "text": "https://github.com/tsueri/PDF-QR-Scanner",
+                  "bytesB64": "aHR0cHM6Ly9naXRodWIuY29tL3RzdWVyaS9QREYtUVItU2Nhbm5lcg=="
+                }
+              ]
+            ]
+          },
+          "two-page-qr.pdf": {
+            "pageCount": 2,
+            "pages": [
+              [
+                {
+                  "format": "QRCode",
+                  "symbology": "QRCode",
+                  "contentType": "Text",
+                  "symbologyIdentifier": "]Q1",
+                  "text": "PDFQR-FIXTURE-PAGE-1",
+                  "bytesB64": "UERGUVItRklYVFVSRS1QQUdFLTE="
+                }
+              ],
+              [
+                {
+                  "format": "QRCode",
+                  "symbology": "QRCode",
+                  "contentType": "Text",
+                  "symbologyIdentifier": "]Q1",
+                  "text": "PDFQR-FIXTURE-PAGE-2",
+                  "bytesB64": "UERGUVItRklYVFVSRS1QQUdFLTI="
+                }
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "guards",
+      "dir": "guards",
+      "kind": "raster",
+      "container": "PNG",
+      "expected": {
+        "defaultQR": 0,
+        "allFormats": 0
+      },
+      "notes": "Non-barcode false-positive guard set: gradient photo, dense text page, random RGB noise, flat white. #23 measured 0 valid false positives on 303 similar images with returnErrors off.",
+      "verified": {
+        "reader": "zxing-wasm 3.1.6",
+        "files": {
+          "flat-white.png": {
+            "defaultQR": 0,
+            "allFormats": 0,
+            "pixels": "400x300",
+            "observed": []
+          },
+          "gradient-photo.png": {
+            "defaultQR": 0,
+            "allFormats": 0,
+            "pixels": "1200x800",
+            "observed": []
+          },
+          "noise.png": {
+            "defaultQR": 0,
+            "allFormats": 0,
+            "pixels": "800x600",
+            "observed": []
+          },
+          "text-page.png": {
+            "defaultQR": 0,
+            "allFormats": 0,
+            "pixels": "1191x1684",
+            "observed": []
+          }
+        }
+      }
+    }
+  ],
+  "integrity": [
+    {
+      "file": "cards/customer-card-1d.pdf",
+      "bytes": 16796,
+      "sha256": "3a6a8979414adf25cd83bef36999143cbbb9c9727cab9dcef74a3fd6c5ee8e32"
+    },
+    {
+      "file": "cards/customer-card-datamatrix.pdf",
+      "bytes": 9535,
+      "sha256": "61ae8386a163c1a5afd1cce52821a3a9f2f6cfdef4b346fc2bd8c3b2211cb1da"
+    },
+    {
+      "file": "guards/flat-white.png",
+      "bytes": 1158,
+      "sha256": "040186a46002b55412dda35eb1a0d3974ee0b3c5aecbb9c5f7d1cd18d9f4f0b6"
+    },
+    {
+      "file": "guards/gradient-photo.png",
+      "bytes": 1332342,
+      "sha256": "85772b5543d885f209a05f62180035d327a3a154757830cedca19bc27813dfdc"
+    },
+    {
+      "file": "guards/noise.png",
+      "bytes": 315211,
+      "sha256": "e340bf70b8947d6244e60a5355145ad78ee054f160ee1fc14a9e92e25993a231"
+    },
+    {
+      "file": "guards/text-page.png",
+      "bytes": 279139,
+      "sha256": "67bbd431acf7129376c0046054c399679be28d2062e88aa80906eb5546886be8"
+    },
+    {
+      "file": "heic-tiff/multi-page-g4.tiff",
+      "bytes": 5472,
+      "sha256": "48421daecceb2b1af2ac4a50d060b1bab564a7740fd27ddb99920b946c598b0f"
+    },
+    {
+      "file": "heic-tiff/photo-12mp.heic",
+      "bytes": 6209077,
+      "sha256": "59ac73d3ca385b7a2e7d2c6b7b7d35222bf83132b569145951053fba2b8ad0ac"
+    },
+    {
+      "file": "large/bomb-144mp.png",
+      "bytes": 598293,
+      "sha256": "4cc7a8cd1d0ef24fb6530e674bdd06c2b327972c0342e785bcc465d347f27042"
+    },
+    {
+      "file": "large/photo-12mp-qr-corner.jpg",
+      "bytes": 2253600,
+      "sha256": "cad3f2a29563c3ae8cd8d58f3c89b47d3aa649530d88b0dd73d183f687f9a326"
+    },
+    {
+      "file": "large/photo-48mp-qr-corner.jpg",
+      "bytes": 7387155,
+      "sha256": "bfdee585adaffd22a70d2b2bc2193ae54a9a2aafa075391b61a68dc01927b70f"
+    },
+    {
+      "file": "orientation/exif-orientation-6.jpg",
+      "bytes": 986038,
+      "sha256": "40b820ee29345c8b4370600354793da3689f11575199072e405b13eb661c2853"
+    },
+    {
+      "file": "orientation/exif-orientation-8.jpg",
+      "bytes": 986060,
+      "sha256": "eb7ae2d20b6d91fd3a838295abe6a8c440b27de123be77432768c0230cdd11d6"
+    },
+    {
+      "file": "pdf/example.pdf",
+      "bytes": 5759,
+      "sha256": "5bdc37287bb6e38393b9dd167195c2b9118d7e9bc9489f6dd7b2fa5bcca1cd39"
+    },
+    {
+      "file": "pdf/two-page-qr.pdf",
+      "bytes": 6114,
+      "sha256": "38f24f4ff7461c3dbe94b201864dbf84a5143ca16e1264fbdfcdcfccb51e001f"
+    },
+    {
+      "file": "qr-same-payload/qr-transparent.png",
+      "bytes": 1522,
+      "sha256": "d5eec1779de6dbe7c4be41d5f9fe0cc17056f9fc4ff7eb35ce87d99b9eab8c61"
+    },
+    {
+      "file": "qr-same-payload/qr.avif",
+      "bytes": 691,
+      "sha256": "e15e887506d52f127897ed39ec900b0e39cdd801161bc43f2150944d93752182"
+    },
+    {
+      "file": "qr-same-payload/qr.bmp",
+      "bytes": 262902,
+      "sha256": "5224539bf60173fea7d134c2f5a7d247825a1d6fc9d980b9d3e831420ad3fede"
+    },
+    {
+      "file": "qr-same-payload/qr.gif",
+      "bytes": 3330,
+      "sha256": "3803d9c78a879d59a77bb67a6e073267d490757c1612cfc48a51df152b75d537"
+    },
+    {
+      "file": "qr-same-payload/qr.jpg",
+      "bytes": 1139,
+      "sha256": "5457b10852befb5cec14e44b58f3e8ac471d99fb2f236d7da6eeabcab9c29f20"
+    },
+    {
+      "file": "qr-same-payload/qr.png",
+      "bytes": 1670,
+      "sha256": "e4102e43b149fdfc8de2389c38a154c4cef8f9662f507fd2d5089ac02c9b3809"
+    },
+    {
+      "file": "qr-same-payload/qr.svg",
+      "bytes": 1634,
+      "sha256": "b50476d5bc0be0bf5ca311d358dba035d7d826eef599eaabf24958feda57d205"
+    },
+    {
+      "file": "qr-same-payload/qr.webp",
+      "bytes": 1158,
+      "sha256": "7bb143a4b005af1d06cc83a00c949ea7f41d7787ec12b208382217a6721d25e3"
+    },
+    {
+      "file": "quality/qr-baked-rot90.png",
+      "bytes": 1248,
+      "sha256": "53c4e473311f34311a095b3edbdc1a1514504f882352849bc54f76fd2144fbdf"
+    },
+    {
+      "file": "quality/qr-low-contrast.jpg",
+      "bytes": 2957,
+      "sha256": "be4325747a27d24a73420dc2073faa3fb8380411fc88e9babcbe1ff514e25727"
+    },
+    {
+      "file": "quality/qr-occluded.png",
+      "bytes": 4892,
+      "sha256": "d0788c6712e96cc54960503dfe83434c04fef171e057d843add28536994b1a19"
+    },
+    {
+      "file": "quality/qr-skewed.png",
+      "bytes": 22533,
+      "sha256": "2a8bffa95ea44af05991f1359a1f775a99d756e4d6361e5ab0e0ddee453c43b5"
+    },
+    {
+      "file": "symbologies/aztec.png",
+      "bytes": 1026,
+      "sha256": "d957a5d19959da05635354e087531650d0a1909502be795f814b467c26908906"
+    },
+    {
+      "file": "symbologies/code128.png",
+      "bytes": 1766,
+      "sha256": "03dc95adea235c726ce66aebf878955ca22761810036f22455d91e702e698a61"
+    },
+    {
+      "file": "symbologies/datamatrix.png",
+      "bytes": 1000,
+      "sha256": "087228bb3f382165f57db51f75940d1d2a4b9646f6f22a733773d1139ed6c81c"
+    },
+    {
+      "file": "symbologies/ean13-addon5.png",
+      "bytes": 1500,
+      "sha256": "017bc71663fe9399e3150c5983bdd8c321457dce13f670a54f74ff59bd81b646"
+    },
+    {
+      "file": "symbologies/ean13.png",
+      "bytes": 1354,
+      "sha256": "9e75b34cc00a9d82e207ef5e2b1eee0f13d15fac9bdb4f402c064c511fc909ba"
+    },
+    {
+      "file": "symbologies/gs1-code128.png",
+      "bytes": 2013,
+      "sha256": "80bfb955caea3bbfa4bbb476cca6743beee6d077f4c8641123a40a2c051b5db8"
+    },
+    {
+      "file": "symbologies/gs1-datamatrix.png",
+      "bytes": 1004,
+      "sha256": "7ed863423d384706ab5989921ea4f35c5131eb8899b3d7f8cbdd2894e6687401"
+    },
+    {
+      "file": "symbologies/itf14.png",
+      "bytes": 1675,
+      "sha256": "a37d08981718b354cf320b42399f18c987b1e77e91dfa2ae5031208f9aa1600c"
+    },
+    {
+      "file": "symbologies/mixed-symbologies.png",
+      "bytes": 15328,
+      "sha256": "d50971b312ef07a56f234b9d98ae492c4e9b6d8f06ae2f01b08335f168cf9091"
+    },
+    {
+      "file": "symbologies/pdf417.png",
+      "bytes": 1254,
+      "sha256": "9a87d3a154f1cfc2da112b70175b0f0aa6140fd66463f178f794fa0dc0ff28c4"
+    },
+    {
+      "file": "symbologies/qr-256bytes.png",
+      "bytes": 5945,
+      "sha256": "ad5aa83d76d792f1d8156f40d1b9341613d23b06aa6ca02d656932606304c19e"
+    },
+    {
+      "file": "symbologies/qr-binary.png",
+      "bytes": 1393,
+      "sha256": "ec9805696f12769d7f9f064f028d03782c64dab4a0b7ee6924052e0a3ffafaa1"
+    },
+    {
+      "file": "symbologies/qr-inverted.png",
+      "bytes": 2003,
+      "sha256": "bbe5746c50077465469000d8bb200f0892d00812dba9c0c46c44b4ff30175da9"
+    },
+    {
+      "file": "symbologies/qr-micro.png",
+      "bytes": 901,
+      "sha256": "cd5aafc222c863ac037c1b6d3d9253943717c61d2e19eac95c3d2a2a5660e21f"
+    },
+    {
+      "file": "symbologies/qr-rmqr.png",
+      "bytes": 1040,
+      "sha256": "27af9adc97e6f93daed45328e9d34408ecd2516b356014f429278d6acd6187a8"
+    },
+    {
+      "file": "symbologies/telepen-alpha.png",
+      "bytes": 1899,
+      "sha256": "aa2227ec88be29838352cde5f3f1a2519cbb435f3091358303ec6ac725d18765"
+    },
+    {
+      "file": "symbologies/telepen-numeric.png",
+      "bytes": 1344,
+      "sha256": "fc4338175d624a5c3b3816f99c31de9cf711be8f22754d52901cf29654164ac3"
+    },
+    {
+      "file": "symbologies/upca.png",
+      "bytes": 1377,
+      "sha256": "d35744c6a2dd5e89a19f7c807a2878eb3828971b25c50f103d02e87ee5bc8d87"
+    },
+    {
+      "file": "trees/tree-mixed/cards/card-1.png",
+      "bytes": 1265,
+      "sha256": "3b926878dcd058bd66bab3bf34a0d1bf3fe3d805073cdd6a81df55cb38c18de6"
+    },
+    {
+      "file": "trees/tree-mixed/cards/photo-1.png",
+      "bytes": 592074,
+      "sha256": "c5cd33143a3c70b9dfc97c7803fb2eb3f61d4f2872babd55ff7e6bf3277b01ee"
+    },
+    {
+      "file": "trees/tree-mixed/docs/scan.pdf",
+      "bytes": 9203,
+      "sha256": "27923c0acc6f379ea442e34a669ac9b3fbe155458ce18a8ec2e96c8da72d9a49"
+    },
+    {
+      "file": "trees/tree-mixed/invoices/inv-7.png",
+      "bytes": 578,
+      "sha256": "58665ac8a6871ca6d320094b2fc569095797abacd787f4badb809d99b5b6c366"
+    },
+    {
+      "file": "trees/tree-mixed/reports/card-1.png",
+      "bytes": 1279,
+      "sha256": "2cb27310476f978d7e4601e03b670c8ee3c3d58da9ef2ec2761bf83a0dfa2697"
+    },
+    {
+      "file": "trees/tree-mixed.zip",
+      "bytes": 590291,
+      "sha256": "d038ce9ef2143983b68bc91e47b19f7dc189d4c261523b528e210f7d38984c3a"
+    }
+  ]
+}
