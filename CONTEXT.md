@@ -62,3 +62,13 @@ _Avoid_: Detection, entry, row
 
 **Reading order**:
 The order results are listed within an item: top to bottom, then left to right.
+
+### Choosing symbologies
+
+**Symbology selection**:
+The app-wide setting that says which symbologies the decoder looks for. One selection governs every source, with no per-source or per-file override. A scan of files uses the selection it was started with; a camera session follows the selection while it runs. The selection persists between visits.
+_Avoid_: Format filter, format picker, barcode settings
+
+**Preset**:
+A named shorthand for a symbology selection: QR codes (the default), 1D barcodes, 2D barcodes, Everything. The QR codes preset reads the whole QR family — Micro QR and rMQR included — not only the common square QR.
+_Avoid_: Mode, profile
