@@ -39,7 +39,11 @@
     </script>
     <script src="node_modules/jszip/dist/jszip.min.js?v=__ASSET_VERSION__"></script>
     <script type="module" src="src/app.js?v=__ASSET_VERSION__"></script>
+    <!-- PROTOTYPE (ticket #29): no-ops unless ?variant=a|b|c is set -->
+    <script type="module" src="src/prototype/results.js?v=__ASSET_VERSION__"></script>
     <link rel="stylesheet" href="src/scss/custom.css?v=__ASSET_VERSION__">
+    <!-- PROTOTYPE (ticket #29): results-view variants, active only with ?variant=a|b|c -->
+    <link rel="stylesheet" href="src/prototype/results.css?v=__ASSET_VERSION__">
 </head>
 
 <body>
