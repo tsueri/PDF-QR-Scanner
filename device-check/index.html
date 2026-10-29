@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Device check — HEIC and image-decoding limits</title>
+    <meta name="description" content="Throwaway harness for ticket #33: real-device HEIC and image-decoding limits.">
+    <style>
+        :root { color-scheme: light dark; }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0 auto; max-width: 46rem; padding: 1rem 1.1rem 3rem;
+            background: #f6f7f9; color: #1c1e21; font-size: 16px; line-height: 1.45;
+        }
+        h1 { font-size: 1.35rem; margin: 0 0 .2rem; }
+        h2 { font-size: 1.05rem; margin: 0 0 .4rem; }
+        p { margin: .35rem 0; }
+        .muted { color: #6b7280; font-size: .88rem; }
+        .banner {
+            background: #fff3cd; border: 1px solid #e5d38a; border-radius: 10px;
+            padding: .55rem .8rem; font-size: .85rem; margin-bottom: 1rem;
+        }
+        section {
+            background: #fff; border: 1px solid #e3e6ea; border-radius: 12px;
+            padding: .9rem 1rem; margin: .8rem 0;
+        }
+        button {
+            display: block; width: 100%; padding: .8rem 1rem; margin: .5rem 0 .2rem;
+            font-size: 1rem; font-weight: 600; border: 0; border-radius: 10px;
+            background: #0b57d0; color: #fff; touch-action: manipulation;
+        }
+        button:disabled { opacity: .5; }
+        button.ghost { background: #fff; color: #0b57d0; border: 1px solid #0b57d0; }
+        input[type="file"] { display: block; width: 100%; margin: .4rem 0; font-size: .9rem; }
+        input[type="text"], select, textarea {
+            display: block; width: 100%; padding: .6rem; margin: .3rem 0 .6rem;
+            font-size: 1rem; border: 1px solid #c9ced6; border-radius: 8px; background: #fff; color: #1c1e21;
+        }
+        textarea { min-height: 4.5rem; }
+        label { font-weight: 600; font-size: .88rem; display: block; margin-top: .5rem; }
+        table { width: 100%; border-collapse: collapse; font-size: .82rem; margin: .5rem 0; }
+        th, td { border-bottom: 1px solid #e3e6ea; padding: .3rem .25rem; text-align: left; vertical-align: top; }
+        th { color: #6b7280; font-weight: 600; }
+        code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .78rem; word-break: break-all; }
+        .ok { color: #1a7f37; font-weight: 600; }
+        .fail { color: #b42318; font-weight: 600; }
+        .warn-box { background: #fff3cd; border: 1px solid #e5d38a; border-radius: 8px; padding: .5rem .7rem; font-size: .85rem; margin: .4rem 0; }
+        .row { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+        .row select { flex: 1; margin: 0; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Device check</h1>
+        <p class="muted">Throwaway harness for ticket #33 — real-device HEIC and image-decoding limits.
+        Everything runs in this browser; nothing leaves the device until you tap <b>Send results to computer</b>.</p>
+    </header>
+
+    <div class="banner">
+        Results are saved on this device as you go, so a reload or crash does not lose them.
+        Re-open this page and continue where you left off.
+    </div>
+
+    <section id="sec-device">
+        <h2>Your device</h2>
+        <div id="device-out" class="muted">collecting…</div>
+    </section>
+
+    <section id="sec-bundled">
+        <h2>1 · Bundled HEIC decode</h2>
+        <p>Fetches the bundled 12 MP HEIC (expected 4032×3024) and tries three decode paths:
+        <code>&lt;img&gt;</code>, <code>createImageBitmap</code> on the main thread, and <code>createImageBitmap</code> in a Web Worker.
+        On Android Chrome this is expected to fail everywhere; on iOS Safari 17+ it should succeed.</p>
+        <button id="btn-heic">Run HEIC decode tests</button>
+        <div id="bundled-out"></div>
+
+        <h2 style="margin-top:1.2rem">2 · 12 MP JPEG baseline</h2>
+        <p>Same three paths on a 12 MP JPEG (expected 4000×3000) — the reference for decode times.</p>
+        <button id="btn-jpeg12" class="ghost">Run 12 MP JPEG tests</button>
+
+        <h2 style="margin-top:1.2rem">3 · 48 MP photo survival</h2>
+        <p>48 MP JPEG (expected 8000×6000): the three decode paths plus a full-size
+        <code>OffscreenCanvas</code> read (the app pipeline's path). May be slow; watch for crashes.</p>
+        <button id="btn-jpeg48" class="ghost">Run 48 MP tests (may be slow)</button>
+    </section>
+
+    <section id="sec-picker">
+        <h2>4 · File picker: HEIC or JPEG?</h2>
+        <p>Does the Photos picker hand the app the original HEIC or an auto-converted JPEG?
+        Pick <b>the same HEIC photo</b> from your Photos library with each of the two inputs.</p>
+        <label>accept="image/*"</label>
+        <input type="file" id="pick-image" accept="image/*">
+        <label>accept=".heic,image/heic"</label>
+        <input type="file" id="pick-heic" accept=".heic,image/heic">
+        <div id="picker-out"></div>
+    </section>
+
+    <section id="sec-special">
+        <h2>5 · Special HEIC variants</h2>
+        <p>Pick the iPhone HEICs the research could not test. For each one, label what it is.</p>
+        <div class="warn-box">Where to find them: <b>multi-image / Live Photo</b> — a Live Photo.
+        <b>Grid / tiled</b> — a 48 MP photo (ProRAW or 48 MP mode on Pro models).
+        <b>HDR / gain-map</b> — a photo taken with Smart HDR / auto-HDR. Any mix works; label what you picked.</div>
+        <input type="file" id="pick-special" accept="image/*" multiple>
+        <div id="special-out"></div>
+    </section>
+
+    <section id="sec-capture">
+        <h2>6 · Camera capture path</h2>
+        <p>Does <code>&lt;input capture="environment"&gt;</code> produce HEIC or JPEG on this device?</p>
+        <label>Take one photo with the camera</label>
+        <input type="file" id="pick-capture" accept="image/*" capture="environment">
+        <label>iOS camera format setting (Settings → Camera → Formats)</label>
+        <select id="cn-camera-setting">
+            <option value="">— not recorded —</option>
+            <option value="high-efficiency">High Efficiency (HEIF)</option>
+            <option value="most-compatible">Most Compatible (JPEG)</option>
+            <option value="unsure">Unsure / other</option>
+        </select>
+        <div id="capture-out"></div>
+    </section>
+
+    <section id="sec-canvas">
+        <h2>7 · Canvas area limit probe</h2>
+        <p>Grows a canvas until <code>getImageData</code> goes blank or throws, on the main thread
+        and on <code>OffscreenCanvas</code> inside a Web Worker (the app pipeline's path).</p>
+        <div class="warn-box">The largest probe (16384² ≈ 1 GB of backing store) may crash this tab.
+        Earlier results are saved — if the page reloads, re-open and re-run to finish the probe.</div>
+        <button id="btn-canvas">Run canvas probe</button>
+        <div id="canvas-out"></div>
+    </section>
+
+    <section id="sec-camera">
+        <h2>8 · Camera prototype notes</h2>
+        <p>Open the camera prototype (variant A · full-screen takeover) and scan codes continuously for
+        a few minutes, then record what you felt:</p>
+        <a id="link-camera" href="/?camera=a" style="display:block; width:100%; padding:.8rem 1rem; margin:.5rem 0; font-weight:600; border-radius:10px; background:#0b57d0; color:#fff; text-align:center; text-decoration:none;">Open camera prototype (variant A)</a>
+        <label>Decode feel (how fast / smooth are live scans?)</label>
+        <select id="cn-decode">
+            <option value="">— not tested —</option>
+            <option value="smooth">Smooth, instant</option>
+            <option value="acceptable">Acceptable, slight lag</option>
+            <option value="laggy">Laggy but usable</option>
+            <option value="unusable">Unusable</option>
+        </select>
+        <label>Phone temperature after ~5 minutes of continuous scanning</label>
+        <select id="cn-thermal">
+            <option value="">— not tested —</option>
+            <option value="cool">Cool</option>
+            <option value="warm">Warm but fine</option>
+            <option value="hot">Hot, uncomfortable</option>
+            <option value="throttled">Throttled / slowed down</option>
+        </select>
+        <label>Which rear lens does <code>facingMode: "environment"</code> pick? (compare field of view)</label>
+        <select id="cn-lens">
+            <option value="">— not tested —</option>
+            <option value="main-1x">Main 1× (standard)</option>
+            <option value="ultrawide-0.5x">Ultra-wide 0.5×</option>
+            <option value="telephoto">Telephoto</option>
+            <option value="unknown">Unknown</option>
+        </select>
+        <label>Torch control available in the prototype?</label>
+        <select id="cn-torch">
+            <option value="">— not tested —</option>
+            <option value="yes">Yes, works</option>
+            <option value="shown-but-failed">Shown but does not work</option>
+            <option value="no">Not shown</option>
+        </select>
+        <label>Zoom control available in the prototype?</label>
+        <select id="cn-zoom">
+            <option value="">— not tested —</option>
+            <option value="yes">Yes, works</option>
+            <option value="shown-but-failed">Shown but does not work</option>
+            <option value="no">Not shown</option>
+        </select>
+        <label>When opened from the Home Screen web app, does it re-prompt for camera permission?</label>
+        <select id="cn-homescreen">
+            <option value="">— not tested —</option>
+            <option value="yes">Yes, re-prompted</option>
+            <option value="no">No, remembered</option>
+        </select>
+        <label>Free notes (battery, anything else)</label>
+        <textarea id="cn-text" placeholder="e.g. battery dropped x% in y min; scan rate felt like ~n/s; …"></textarea>
+        <button id="btn-save-camera" class="ghost">Save camera notes</button>
+        <div id="camera-out"></div>
+    </section>
+
+    <section id="sec-send">
+        <h2>Send results to computer</h2>
+        <label>Device label</label>
+        <input type="text" id="label" value="iphone-safari">
+        <button id="btn-send">Send results to computer</button>
+        <button id="btn-copy" class="ghost">Copy results JSON</button>
+        <div id="send-status" class="muted"></div>
+    </section>
+
+    <script type="module" src="device-check.js"></script>
+</body>
+</html>

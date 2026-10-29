@@ -8,9 +8,13 @@
 //     warning once (iOS: visit the URL, "show details", "visit this website").
 //
 // Needs the `openssl` CLI (used only to mint the throwaway cert under .prototype-cert/).
+//
+// Also serves the device-check harness (ticket #33, `device-check/`) and accepts
+// POST /device-check/results?label=<label> — the phone pushes its results JSON to
+// device-check/results/<label>.json so the human never transcribes values by hand.
 
 import { createServer } from 'node:https';
-import { createReadStream, existsSync, mkdirSync, readFileSync, statSync } from 'node:fs';
+import { createReadStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { extname, join, normalize, resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { networkInterfaces } from 'node:os';
@@ -40,13 +44,40 @@ const MIME = {
     '.wasm': 'application/wasm',
     '.png': 'image/png',
     '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
     '.svg': 'image/svg+xml',
+    '.heic': 'image/heic',
+    '.tiff': 'image/tiff',
     '.y4m': 'video/y4m',
 };
 
+const RESULTS_DIR = join(ROOT, 'device-check', 'results');
+
 const server = createServer({ key: readFileSync(KEY), cert: readFileSync(CERT) }, (req, res) => {
+    // Device-check results: the phone POSTs its JSON here; the wizard reads it back.
+    if (req.method === 'POST' && req.url.startsWith('/device-check/results')) {
+        let body = '';
+        req.on('data', (c) => { body += c; if (body.length > 2_000_000) req.destroy(); });
+        req.on('end', () => {
+            try {
+                const label = (new URL(req.url, 'https://localhost').searchParams.get('label') || 'device')
+                    .replace(/[^a-z0-9_.-]/gi, '_').slice(0, 64);
+                JSON.parse(body);                      // validate before writing
+                mkdirSync(RESULTS_DIR, { recursive: true });
+                writeFileSync(join(RESULTS_DIR, `${label}.json`), body);
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end('{"ok":true}');
+                console.log(`[device-check] saved results: ${label}.json`);
+            } catch (err) {
+                res.writeHead(400, { 'Content-Type': 'text/plain' });
+                res.end('bad request');
+            }
+        });
+        return;
+    }
     let path = decodeURIComponent(new URL(req.url, 'https://localhost').pathname);
     if (path === '/') path = '/index.html';
+    if (path.endsWith('/')) path += 'index.html';
     const file = normalize(join(ROOT, path));
     if (!file.startsWith(ROOT)) { res.writeHead(403); res.end(); return; }
     if (!existsSync(file) || !statSync(file).isFile()) { res.writeHead(404); res.end('not found'); return; }
@@ -60,7 +91,8 @@ server.listen(PORT, () => {
     for (const list of Object.values(networkInterfaces())) {
         for (const ni of list || []) {
             if (ni.family === 'IPv4' && !ni.internal) {
-                console.log(`  https://${ni.address}:${PORT}/index.html?camera=a|b|c`);
+                console.log(`  device-check:  https://${ni.address}:${PORT}/device-check/`);
+                console.log(`  camera proto:  https://${ni.address}:${PORT}/index.html?camera=a|b|c`);
             }
         }
     }

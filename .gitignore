@@ -6,3 +6,4 @@ node_modules/
 .codegraph/
 release/
 pdf-qr-scanner-v*.zip
+.prototype-cert/
