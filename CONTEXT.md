@@ -57,7 +57,11 @@ Where inside an item a code was found, as the corners of the code. A sighting ma
 _Avoid_: Coordinates, bounding box
 
 **Result**:
-A sighting that survived deduplication — the unit the app shows and exports. For file sources, deduplication is within one item and keyed on symbology plus payload; for a camera session it spans the session's frames. The same payload found in two different sources always yields two results.
+A sighting that survived deduplication — the unit the app shows and exports. For file sources, deduplication is within one item and keyed on symbology plus payload. For a camera session it spans the session's frames: a consecutive run of frames showing the same code is one sighting — the run collapses, not accumulates. The same payload found in two different sources always yields two results.
+
+**Re-sighting**:
+A detection of a code that already has a result in the same camera session, after the code left the view. A re-sighting increments the result's count rather than creating a new result.
+_Avoid_: Duplicate, repeat
 _Avoid_: Detection, entry, row
 
 **Reading order**:
