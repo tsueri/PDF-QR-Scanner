@@ -24,7 +24,10 @@ function fixtureTable(t) {
     for (const [key, name] of rows) {
         const f = t?.[key];
         if (!f) continue;
-        md += `| ${name} | ${dims(f.img)} (${ms(f.img)}) | ${dims(f.bitmapMain)} (${ms(f.bitmapMain)}) | ${dims(f.bitmapWorker)} (${ms(f.bitmapWorker)}) | ${dims(f.fullRead)} (${ms(f.fullRead)}) |\n`;
+        const full = f.fullRead
+            ? (f.fullRead.ok ? `✓ ${f.fullRead.pixels.toLocaleString('en-US')} px (${ms(f.fullRead)})` : `✗ ${f.fullRead.error}`)
+            : '— not run';
+        md += `| ${name} | ${dims(f.img)} (${ms(f.img)}) | ${dims(f.bitmapMain)} (${ms(f.bitmapMain)}) | ${dims(f.bitmapWorker)} (${ms(f.bitmapWorker)}) | ${full} |\n`;
     }
     return md;
 }
