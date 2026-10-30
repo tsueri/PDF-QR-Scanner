@@ -67,6 +67,24 @@ _Avoid_: Detection, entry, row
 **Reading order**:
 The order results are listed within an item: top to bottom, then left to right.
 
+### Failures
+
+**Source failure**:
+A source that could not be read at all and therefore yields no results: it could not be brought in, could not be decoded, was rejected for its size, or was refused by the camera. A source failure carries a kind and a message.
+_Avoid_: Load error, scan error (the old per-PDF category names)
+
+**Item failure**:
+An item that could not be decoded while other items of the same source scanned. The source carries item failures, each with its locator; the source itself is not failed.
+_Avoid_: Page error, partial failure
+
+**Failure kind**:
+The category of a failure, naming what went wrong and what can be done about it. Every failure has exactly one kind, and one set of kinds covers every source, container, paste, and camera failure.
+_Avoid_: Error code, error message (the message is the human text, not the kind)
+
+**Empty**:
+A source whose read completed but found no codes. Empty is not a failure, and no completed read guarantees that nothing was missed — a damaged file can decode as if it were empty.
+_Avoid_: No codes (as a failure), not found
+
 ### Choosing symbologies
 
 **Symbology selection**:
